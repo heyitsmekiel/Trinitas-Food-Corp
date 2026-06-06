@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trinitas Food Corp. Information and Management System for Panadero</title>
+    <link rel="icon" type="image/png" href="trinitas-logo.jpeg">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #D32F2F;
+            --primary-glow: rgba(211, 47, 47, 0.35);
+            --bg-gradient: linear-gradient(135deg, #09090b 0%, #1c0a0a 100%);
+            --card-bg: rgba(24, 24, 27, 0.85);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --accent-gold: #f59e0b;
+            --accent-silver: #9ca3af;
+            --accent-bronze: #b45309;
+            --accent-success: #10b981;
+            --accent-fail: #ef4444;
+            --accent-info: #3b82f6;
+            --input-bg: #18181b;
+            --sidebar-width: 260px;
+        }
+
+        [data-theme="light"] {
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-border: rgba(211, 47, 47, 0.12);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --input-bg: #ffffff;
+        }
+
+        /* Strictly Isolated Transitions to prevent render lag */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body, .app-sidebar, .global-sticky-header, .kpi-card, .chart-composite, .data-table-wrapper, .top-10-item, .podium-column, .interactive-select, .search-input, .btn-primary, .btn-secondary, .circle-btn, .pill-toggle-container, .admin-modal-box, .insights-panel { 
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease; 
+        }
+
+        body { display: flex; background: var(--bg-gradient); color: var(--text-main); height: 100vh; overflow: hidden; position: relative; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-gradient); }
+        ::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+        /* ADVANCED PRESENTATION PRINTING TEMPLATE (Multi-Page Formatting) */
+        .print-header { display: none; }
+        @media print {
+            @page { size: A4 landscape; margin: 8mm; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; text-shadow: none !important; box-shadow: none !important; }
+            body { display: block; background: white !important; color: black !important; overflow: visible !important; height: auto !important; }
+            .bakery-particle-field, #auth-canvas, .app-sidebar, .global-sticky-header, .admin-modal-backdrop, .empty-state, .table-toolbar input, .insights-panel, .notif-badge, .circle-btn, .pill-toggle-container, .chart-checkbox-container, #toastContainer, #skeletonLoader { display: none !important; }
+            
+            .app-main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; height: auto !important; overflow-y: visible !important; display: block !important; }
+            .tab-content-container { position: relative !important; width: 100% !important; display: block !important; }
+            
+            /* FORCE EACH TAB TO RENDER ON A NEW PAGE */
+            .tab-pane { position: relative !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; display: block !important; page-break-after: always; z-index: 1 !important; padding-top: 10px; }
+            .tab-pane:last-child { page-break-after: auto; }
+            #tab-sales { page-break-before: auto; } 
+            
+            /* ONLY hide Settings. Keep Analytics visible for PDF! */
+            #tab-settings { display: none !important; } 
+
+            .print-header { display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; page-break-inside: avoid; }
+            .print-header img { width: 120px; margin-top: 0; }
+            .print-header h1 { font-size: 1.4rem; color: #000; margin: 0; letter-spacing: -0.5px; }
+            .print-kpi-settings, .print-date-left { font-size: 0.75rem; color: #444; font-weight: 700; margin-top: 3px; }
+            
+            .kpi-matrix { display: flex; flex-direction: row; gap: 8px; flex-wrap: nowrap; margin-bottom: 10px; page-break-inside: avoid; }
+            .kpi-card { flex: 1; border: 1px solid #ccc !important; box-shadow: none !important; padding: 8px !important; border-radius: 8px !important; }
+            .kpi-details p { font-size: 9px; color: #333 !important; margin-bottom: 2px;}
+            .kpi-details h2 { font-size: 16px; color: #000 !important; margin:0;}
+            .kpi-icon { display: none; } 
+            
+            .chart-grid-2 { display: flex; flex-direction: row; gap: 10px; flex-wrap: nowrap; margin-bottom: 10px; page-break-inside: avoid; }
+            .chart-composite { flex: 1; border: 1px solid #ccc !important; box-shadow: none !important; page-break-inside: avoid; padding: 10px !important; margin-bottom:0 !important; border-radius: 8px !important;}
+            .chart-wrapper { max-height: 200px !important; height: 200px !important; }
+            canvas { max-height: 200px !important; max-width: 100% !important; object-fit: contain; }
+            
+            .data-table-wrapper { border: 1px solid #ccc !important; box-shadow: none !important; page-break-inside: auto; border-radius: 8px !important; padding: 8px !important;}
+            .data-table { width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
+            .data-table th, .data-table td { padding: 4px 6px !important; font-size: 9px !important; color: #000 !important; border-bottom: 1px solid #ddd !important; word-wrap: break-word !important; overflow-wrap: break-word !important; }
+            .data-table tr { page-break-inside: avoid !important; page-break-after: auto !important; }
+            .track-rail { display: none !important; } 
+            .heatmap-cell { border: 1px solid #ccc !important; }
+        }
+
+        /* Mobile Layout */
+        @media (max-width: 1024px) {
+            body { flex-direction: column; overflow: auto; height: auto; }
+            .app-sidebar { width: 100%; height: auto; position: relative; padding: 1rem; border-right: none; border-bottom: 1px solid var(--card-border); flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; }
+            .sidebar-brand { margin-bottom: 1rem; width: 100%; justify-content: center; }
+            .nav-menu { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0.5rem; overflow-x: visible; padding-right: 0;}
+            .nav-item { padding: 0.5rem 1rem; font-size: 0.8rem; }
+            .app-main-content { margin-left: 0; width: 100%; height: auto; padding: 1rem; overflow-y: visible; }
+            
+            .global-sticky-header { flex-direction: column; align-items: center; text-align: center; gap: 1rem; position: static !important; margin-top: 0 !important; border-radius: 20px !important; padding: 1rem; }
+            .header-left-group { flex-direction: column; justify-content: center; }
+            .header-right-group { flex-wrap: wrap; justify-content: center; border-left: none; padding-left: 0; margin-left: 0; }
+            .system-icons { border-left: none; padding-left: 0; justify-content: center; width: 100%; margin-top: 0.5rem; }
+            
+            .kpi-matrix { grid-template-columns: 1fr; }
+            .chart-grid-2 { grid-template-columns: 1fr; }
+        }
+
+        /* High Speed Animated Particles */
+        .bakery-particle-field { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; overflow: hidden; pointer-events: none; }
+        .bakery-particle { position: absolute; font-size: 2.2rem; opacity: 0.6; animation: dynamicFloat 6s linear infinite; bottom: -80px; filter: blur(1px) drop-shadow(0 4px 6px rgba(0,0,0,0.4)); }
+        [data-theme="light"] .bakery-particle { opacity: 0.8; filter: blur(1px) drop-shadow(0 4px 6px rgba(0,0,0,0.2)); }
+        @keyframes dynamicFloat { 0% { transform: translateY(0) translateX(0) rotate(0deg) scale(0.8); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(-115vh) translateX(150px) rotate(440deg) scale(1.2); opacity: 0; } }
+
+        /* Login Gate Fixes */
+        #auth-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-gradient); z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .auth-gate { background: #ffffff; border: 1px solid rgba(0,0,0,0.06); border-radius: 28px; padding: 3.5rem; width: 90%; max-width: 440px; text-align: center; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.2); position: relative; z-index: 10000; }
+        .auth-gate img { width: 220px; height: auto; margin-bottom: -1.0rem; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.05)); position: relative; z-index: 10; }
+        .auth-title { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 0.2rem; text-transform: uppercase; color: #0f172a; position: relative; z-index: 11; padding-top: 1.5rem; }
+        .auth-subtitle { font-size: 0.95rem; color: #64748b; margin-bottom: 2rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .field-block { margin-bottom: 1.5rem; text-align: left; }
+        .field-block label { display: block; font-size: 0.75rem; font-weight: 800; color: #64748b; margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.75px;}
+        .field-block .input-wrap { position: relative; }
+        .field-block .input-wrap i { position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%); color: #94a3b8; z-index: 2; }
+        .field-block input, .field-block select { width: 100%; padding: 1rem 1rem 1rem 3rem; background: #f8fafc; border: 1px solid #e2e8f0; color: #0f172a; border-radius: 14px; font-size: 0.95rem; font-weight: 600; position: relative;}
+        .field-block input:focus, .field-block select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-glow); background: #ffffff; }
+        .btn-submit { width: 100%; padding: 1.1rem; background: linear-gradient(135deg, #e11d48, var(--primary)); color: white; border: none; border-radius: 14px; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 6px 20px rgba(211, 47, 47, 0.3); margin-top: 1rem; transition: transform 0.2s, box-shadow 0.2s; }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(211, 47, 47, 0.45); }
+
+        .system-wrapper { display: none; flex-direction: row; width: 100%; height: 100vh; animation: fadeInView 0.3s ease forward; position: relative; z-index: 10; }
+        @keyframes fadeInView { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Structural Layout */
+        .app-sidebar { width: var(--sidebar-width); height: 100vh; background: var(--card-bg); border-right: 1px solid var(--card-border); padding: 2rem 1.5rem; display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
+        .sidebar-brand { display: flex; align-items: center; gap: 1rem; margin-bottom: 3rem; cursor: pointer; transition: transform 0.2s ease, opacity 0.2s ease; }
+        .sidebar-brand:hover { transform: scale(1.03); opacity: 0.9; }
+        .sidebar-brand img { width: 45px; border-radius: 8px; }
+        .sidebar-brand div h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; }
+        .sidebar-brand div p { font-size: 0.55rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; line-height: 1.2; }
+        
+        .nav-menu { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; overflow-y: auto; padding-right: 5px; }
+        .nav-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-radius: 14px; font-weight: 700; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+        .nav-item i { font-size: 1.2rem; width: 22px; text-align: center; }
+        .nav-item:hover { background: var(--input-bg); color: var(--text-main); }
+        .nav-item.active { background: var(--primary); color: white; box-shadow: 0 4px 15px var(--primary-glow); border-color: var(--primary); }
+
+        .app-main-content { flex: 1; height: 100vh; padding: 2rem 3rem; overflow-y: auto; scroll-behavior: smooth; position: relative; }
+        
+        /* NON-FOLLOWING HEADER (Position Relative) */
+        .global-sticky-header { position: relative; z-index: 50; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--card-bg); padding: 1rem 1.5rem; border-radius: 20px; border: 1px solid var(--card-border); box-shadow: 0 10px 30px rgba(0,0,0,0.05); gap: 1rem; flex-wrap: wrap; }
+        
+        .header-left-group { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+        .header-title-area { font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; gap: 0.75rem; letter-spacing: -0.5px; white-space: nowrap; margin: 0; color: var(--primary); }
+        .header-title-area i { font-size: 1.1rem; }
+        
+        .header-date-controls { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-left: 0.5rem;}
+
+        .header-right-group { display: flex; align-items: center; gap: 1rem; flex-wrap: nowrap; margin-left: auto; }
+        .header-actions { display: flex; align-items: center; gap: 0.5rem; }
+        .system-icons { display: flex; align-items: center; gap: 0.5rem; padding-left: 0.75rem; border-left: 1px solid var(--card-border); }
+        
+        .interactive-select { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--card-border); padding: 0.45rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; outline: none; cursor: pointer; transition: all 0.2s; }
+        .interactive-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+        
+        .search-input { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--card-border); padding: 0.7rem 1.2rem 0.7rem 2.5rem; border-radius: 12px; font-weight: 600; font-size: 0.85rem; outline: none; width: 100%; max-width: 300px; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="%23a1a1aa"><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/></svg>'); background-repeat: no-repeat; background-size: 14px; background-position: 1rem center; transition: all 0.2s; }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+
+        .circle-btn { position: relative; width: 36px; height: 36px; border-radius: 10px; background: var(--input-bg); border: 1px solid var(--card-border); color: var(--text-main); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.95rem; transition: all 0.2s;}
+        .circle-btn:hover { border-color: var(--primary); color: var(--primary); transform: scale(1.05); }
+        .notif-badge { position: absolute; top: -5px; right: -5px; background: var(--accent-fail); color: white; font-size: 0.6rem; font-weight: 800; padding: 2px 5px; border-radius: 10px; border: 2px solid var(--card-bg); display: none; }
+        
+        .btn-primary { background: linear-gradient(135deg, #b91c1c, var(--primary)); color: white; border: none; padding: 0.55rem 1.1rem; border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 14px var(--primary-glow); transition: all 0.2s; white-space: nowrap; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--primary-glow); }
+        .btn-secondary { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--card-border); padding: 0.55rem 1.1rem; border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; white-space: nowrap;}
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+
+        .select-all-btn { background: transparent; color: var(--text-main); border: 1px solid var(--card-border); padding: 0.4rem 1rem; border-radius: 99px; font-size: 0.8rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; }
+        .select-all-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .select-all-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 4px 15px var(--primary-glow); }
+
+        .export-dropdown { position: relative; display: inline-block; }
+        .export-dropdown-content { display: none; position: absolute; right: 0; top: 110%; background-color: var(--card-bg); min-width: 190px; box-shadow: 0px 10px 30px rgba(0,0,0,0.15); z-index: 1000; border-radius: 12px; border: 1px solid var(--card-border); overflow: hidden; animation: slideUp 0.2s ease forwards; }
+        .export-dropdown-content button { color: var(--text-main); padding: 0.85rem 1rem; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; width: 100%; text-align: left; background: none; border: none; font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; border-bottom: 1px solid var(--card-border); transition: background 0.2s; }
+        .export-dropdown-content button:last-child { border-bottom: none; }
+        .export-dropdown-content button:hover { background-color: var(--input-bg); color: var(--primary); }
+        .export-dropdown.show .export-dropdown-content { display: block; }
+
+        .pill-toggle-container { display: flex; gap: 0.35rem; background: var(--input-bg); padding: 0.35rem; border-radius: 10px; border: 1px solid var(--card-border); }
+        .pill-btn { background: transparent; border: none; color: var(--text-muted); padding: 0.4rem 0.9rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 0.5px;}
+        .pill-btn:hover { color: var(--text-main); }
+        .pill-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 14px var(--primary-glow); }
+
+        .tab-content-container { position: relative; width: 100%; min-height: 500px; padding-bottom: 3rem; }
+        .tab-pane { position: absolute; opacity: 0; pointer-events: none; visibility: hidden; top: 0; left: 0; width: 100%; transition: opacity 0.3s; z-index: -1; }
+        .tab-pane.active { position: relative; opacity: 1; pointer-events: auto; visibility: visible; z-index: 1; animation: slideUp 0.4s forwards; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* AI Executive Insights Panel */
+        .insights-panel { background: linear-gradient(135deg, rgba(211, 47, 47, 0.05) 0%, rgba(211, 47, 47, 0.01) 100%); border: 1px solid var(--primary-glow); border-radius: 20px; padding: 1.5rem; margin-bottom: 2.5rem; position: relative; overflow: hidden; }
+        .insights-panel::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
+        .insights-panel h3 { font-size: 1.1rem; font-weight: 800; color: var(--primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .insights-list { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
+        .insights-list li { font-size: 0.95rem; font-weight: 500; display: flex; align-items: flex-start; gap: 0.5rem; line-height: 1.4; }
+        .insights-list li i { color: var(--primary); margin-top: 3px; font-size: 0.8rem; }
+
+        /* CALENDAR HEATMAP */
+        .heatmap-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 1rem; justify-content: flex-start; }
+        .heatmap-cell { width: 32px; height: 32px; border-radius: 6px; background: var(--card-border); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.8); transition: transform 0.2s, background-color 0.3s; cursor: pointer; position: relative; }
+        .heatmap-cell:hover { transform: scale(1.1); z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid #fff; }
+        .heatmap-cell .tooltip { visibility: hidden; position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%); background: #000; color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; white-space: nowrap; opacity: 0; transition: opacity 0.2s; z-index: 20; pointer-events: none; }
+        .heatmap-cell:hover .tooltip { visibility: visible; opacity: 1; }
+
+        .status-badge { display: inline-block; padding: 0.35rem 0.85rem; border-radius: 8px; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-active { background: rgba(16, 185, 129, 0.1); color: var(--accent-success); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .status-dormant { background: rgba(161, 161, 170, 0.1); color: var(--text-muted); border: 1px solid rgba(161, 161, 170, 0.2); }
+        .status-review { background: rgba(245, 158, 11, 0.1); color: var(--accent-gold); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .status-fail { background: rgba(239, 68, 68, 0.1); color: var(--accent-fail); border: 1px solid rgba(239, 68, 68, 0.2); }
+        
+        .track-rail { background: var(--input-bg); height: 10px; border-radius: 99px; overflow: hidden; position: relative; border: 1px solid var(--card-border); width: 100%; max-width: 150px; transition: background-color 0.3s, border-color 0.3s;}
+        .track-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #991b1b, var(--primary)); width: 0%; transition: width 1s ease; }
+
+        .kpi-matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+        .kpi-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.02); transition: transform 0.2s, background-color 0.3s, border-color 0.3s; }
+        .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0,0,0,0.05); }
+        .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
+        .kpi-details p { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom:0.25rem; transition: color 0.3s;}
+        .kpi-details h2 { font-size: 1.8rem; font-weight: 800; margin-top: 0.2rem; letter-spacing: -0.5px; }
+        .kpi-icon { width: 50px; height: 50px; border-radius: 14px; background: var(--input-bg); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: var(--primary); border: 1px solid var(--card-border); transition: background-color 0.3s, border-color 0.3s;}
+
+        .chart-grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem; }
+        .chart-composite { background: var(--card-bg); border: 1px solid var(--card-border); padding: 1.5rem; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); margin-bottom: 2.5rem; transition: background-color 0.3s, border-color 0.3s; }
+        .chart-composite h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 1.5rem; letter-spacing: -0.3px; display: flex; align-items: center; gap: 0.5rem;}
+        .chart-wrapper { width: 100%; height: 300px; position: relative; }
+
+        .chart-checkbox-container { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .chart-checkbox-label { display: flex; align-items: center; gap: 0.5rem; background: var(--input-bg); border: 1px solid var(--card-border); padding: 0.4rem 1rem; border-radius: 99px; font-size: 0.8rem; font-weight: 700; cursor: pointer; user-select: none; transition: all 0.2s; border-left: 4px solid var(--card-border); }
+        .chart-checkbox-label input { accent-color: var(--primary); cursor: pointer; }
+
+        .arena-podium-deck { display: flex; justify-content: center; align-items: flex-end; gap: 1.75rem; margin: 3.5rem 0 4.5rem 0; padding-bottom: 1rem; }
+        .podium-column { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 28px; padding: 2.5rem 1.75rem; text-align: center; width: 300px; position: relative; display: flex; flex-direction: column; align-items: center; box-shadow: 0 20px 45px rgba(0,0,0,0.06); transition: transform 0.2s, background-color 0.3s, border-color 0.3s;}
+        .podium-column:hover { transform: translateY(-5px); }
+        .podium-column.rank-1 { height: 330px; order: 2; border-top: 6px solid var(--accent-gold); }
+        .podium-column.rank-2 { height: 280px; order: 1; border-top: 6px solid var(--accent-silver); }
+        .podium-column.rank-3 { height: 240px; order: 3; border-top: 6px solid var(--accent-bronze); }
+        .trophy-container { position: absolute; top: -38px; width: 70px; height: 70px; border-radius: 50%; background: var(--input-bg); border: 2px solid var(--card-border); display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.15); transition: background-color 0.3s, border-color 0.3s;}
+        .rank-1 .trophy-container { color: var(--accent-gold); border-color: var(--accent-gold); }
+        .rank-2 .trophy-container { color: var(--accent-silver); border-color: var(--accent-silver); }
+        .rank-3 .trophy-container { color: var(--accent-bronze); border-color: var(--accent-bronze); }
+        .podium-name { font-weight: 800; font-size: 1.25rem; margin-top: 2rem; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .podium-revenue { color: var(--primary); font-weight: 800; font-size: 1.4rem; margin-top: 0.35rem; letter-spacing: -0.5px; }
+
+        .top-10-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; padding: 1.5rem; margin-bottom: 2.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.02); transition: background-color 0.3s, border-color 0.3s;}
+        .top-10-item { display: flex; justify-content: space-between; align-items: center; background: var(--input-bg); padding: 0.85rem 1.2rem; border-radius: 12px; border: 1px solid var(--card-border); transition: transform 0.2s, background-color 0.3s, border-color 0.3s; }
+        .top-10-item:hover { transform: scale(1.02); border-color: var(--primary-glow); }
+        .top-10-item .t-rank { font-weight: 800; color: var(--text-muted); font-size: 0.9rem; width: 30px; }
+        .top-10-item .t-branch { font-weight: 800; font-size: 0.95rem; flex: 1; }
+        .top-10-item .t-val { font-family: monospace; font-weight: 800; font-size: 1rem; color: var(--primary); }
+
+        .data-table-wrapper { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 24px; padding: 1.5rem; overflow-x: auto; margin-bottom: 2.5rem; transition: background-color 0.3s, border-color 0.3s;}
+        .table-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+        .data-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .data-table th { padding: 1rem; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--card-border); transition: border-color 0.3s, color 0.3s; }
+        .data-table td { padding: 1rem; font-size: 0.95rem; font-weight: 600; border-bottom: 1px solid var(--card-border); vertical-align: middle; transition: border-color 0.3s; }
+        .data-table tr:hover td { background: var(--input-bg); }
+        .data-table td p { margin: 0; font-size: 0.85rem; font-weight: 500; color: var(--text-main); transition: color 0.3s;}
+
+        /* Toast Notifications */
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: var(--card-bg); border-left: 4px solid var(--accent-success); color: var(--text-main); padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: slideInRight 0.3s ease forwards; display: flex; align-items: center; gap: 1rem; font-weight: 600; font-size: 0.9rem; }
+        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* ZERO LAG Modals */
+        .admin-modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; display: none; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.15s ease-out; }
+        .admin-modal-backdrop.show { display: flex; opacity: 1; }
+        .admin-modal-box { background: var(--card-bg); border: 1px solid var(--card-border); width: 95%; max-width: 900px; border-radius: 24px; padding: 2.5rem; box-shadow: 0 30px 60px rgba(0,0,0,0.6); transform: scale(0.95); transition: transform 0.3s ease, background-color 0.3s, border-color 0.3s; max-height: 90vh; overflow-y: auto; }
+        .admin-modal-backdrop.show .admin-modal-box { transform: scale(1); }
+        
+        .modal-topline { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--card-border); padding-bottom: 1.25rem; transition: border-color 0.3s; }
+        .modal-topline h2 { margin: 0; display: flex; align-items: center; gap: 0.5rem; }
+        .modal-close { background: #ef4444; border: none; color: #ffffff; font-size: 1.25rem; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 10px rgba(239,68,68,0.3); }
+        .modal-close:hover { background: #dc2626; transform: scale(1.1); }
+
+        .paste-terminal { width: 100%; height: 220px; background: #000; color: #10b981; border: 1px dashed var(--primary); font-family: monospace; padding: 1.5rem; border-radius: 12px; resize: none; font-size: 0.95rem; margin-bottom: 1.5rem; outline: none; line-height: 1.5; transition: border-color 0.3s;}
+        .toast-info { font-size: 0.85rem; color: #fff; background: #1e1e24; border-left: 5px solid var(--primary); padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center;}
+
+        /* Notif Badges */
+        .notif-dropdown-content { display: none; position: absolute; right: 0; top: 120%; background-color: var(--card-bg); min-width: 320px; box-shadow: 0px 10px 30px rgba(0,0,0,0.2); z-index: 1000; border-radius: 14px; border: 1px solid var(--card-border); overflow: hidden; animation: slideUp 0.2s ease forwards; max-height: 400px; overflow-y: auto; }
+        .notif-dropdown-content .notif-item { padding: 1rem; border-bottom: 1px solid var(--card-border); font-size: 0.85rem; line-height: 1.4; color: var(--text-main); }
+        .notif-dropdown-content .notif-item:last-child { border-bottom: none; }
+        .notif-dropdown-content .notif-item strong { color: var(--primary); }
+        .export-dropdown.show .notif-dropdown-content { display: block; }
+    </style>
+</head>
+<body data-theme="light">
+
+    <input type="file" id="sysRestoreInput" style="display:none" accept=".json" onchange="processRestore(event)">
+
+    <div class="bakery-particle-field" id="particleField"></div>
+    <div id="toastContainer" class="toast-container"></div>
+
+    <div id="auth-canvas">
+        <div class="auth-gate">
+            <img src="trinitas-logo.jpeg" alt="Trinitas Logo" onerror="this.src='https://placehold.co/220x220/d32f2f/ffffff?text=TRINITAS'">
+            <h2 class="auth-title" style="margin-bottom: 0.2rem; font-size: 1.6rem;">TRINITAS</h2>
+            <p class="auth-subtitle">Information and Management System for Panadero</p>
+            
+            <div class="field-block">
+                <label>Username</label>
+                <div class="input-wrap">
+                    <i class="fa fa-user"></i>
+                    <select id="secUser" style="padding-left: 3rem;">
+                        <option value="AdminPanadero">Executive Admin</option>
+                        <option value="Panadero">Area Manager</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field-block">
+                <label>Password</label>
+                <div class="input-wrap"><i class="fa fa-lock"></i><input type="password" id="secPass" placeholder="••••••••"></div>
+            </div>
+            <button class="btn-submit" onclick="executeAuth()">Login</button>
+            <p id="authErrorMsg" style="color: #ef4444; font-size: 0.85rem; margin-top: 1rem; font-weight: 700; display: none;">Authentication mismatch.</p>
+        </div>
+    </div>
+
+    <div class="system-wrapper" id="mainSystem">
+
+        <aside class="app-sidebar">
+            <div class="sidebar-brand" style="cursor:default;">
+                <img src="trinitas-.jpeg" alt="TFC" onerror="this.src='https://placehold.co/50x50/d32f2f/ffffff?text=T'">
+                <div>
+                    <h1 style="font-size: 1.2rem; line-height: 1.1;">TRINITAS</h1>
+                    <p style="font-size: 0.55rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; line-height: 1.2;">KPI Monitoring System</p>
+                </div>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-item active" id="nav-sales" onclick="switchTab('tab-sales', this)"><i class="fa-solid fa-chart-line"></i> A. Sales Performance</div>
+                <div class="nav-item" onclick="switchTab('tab-financials', this)"><i class="fa-solid fa-coins"></i> B. Financial Metrics</div>
+                <div class="nav-item" onclick="switchTab('tab-ops', this)"><i class="fa-solid fa-clipboard-check"></i> C. Operational Highlights</div>
+                <div class="nav-item" onclick="switchTab('tab-compliance', this)"><i class="fa-solid fa-shield-halved"></i> D. Compliance Status</div>
+                <div class="nav-item" onclick="switchTab('tab-action', this)"><i class="fa-solid fa-rocket"></i> E. Action Plans</div>
+                <div class="nav-item" onclick="switchTab('tab-analytics', this)"><i class="fa-solid fa-fire-flame-curved"></i> F. Advanced Analytics</div>
+                <div class="nav-item admin-only" onclick="switchTab('tab-settings', this)"><i class="fa-solid fa-gears"></i> G. System Config</div>
+            </nav>
+        </aside>
+
+        <main class="app-main-content" id="mainContentScrollArea">
+            
+            <header class="global-sticky-header">
+                
+                <div class="header-left-group">
+                    <h2 id="global-tab-title" class="header-title-area"><i class="fa-solid fa-chart-line"></i> A. Sales Performance</h2>
+                    
+                    <div class="header-date-controls" id="headerDateControls">
+                        <select class="interactive-select" id="viewMonth" onchange="runEngine()"></select>
+                        <select class="interactive-select" id="viewDay" onchange="runEngine()" style="display:none;"></select>
+                        <select class="interactive-select" id="viewYear" onchange="runEngine()"></select>
+                        
+                        <div class="pill-toggle-container" id="salesPillToggle">
+                            <button class="pill-btn active" onclick="setSalesFilter('daily', this)">Daily</button>
+                            <button class="pill-btn" onclick="setSalesFilter('weekly', this)">Weekly</button>
+                            <button class="pill-btn" onclick="setSalesFilter('monthly', this)">Monthly</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="header-right-group">
+                    <div class="header-actions">
+                        <div class="export-dropdown" id="global-export-dropdown">
+                            <button class="btn-secondary" id="btnSmartExport" onclick="toggleExportMenu('global-export-dropdown')"><i class="fa-solid fa-file-export"></i> Smart Export</button>
+                            <div class="export-dropdown-content">
+                                <button onclick="handleExport('csv')"><i class="fa-solid fa-file-csv"></i> Export Module to Excel (.csv)</button>
+                                <button onclick="handleExport('doc')"><i class="fa-solid fa-file-word"></i> Export Full Report (.doc)</button>
+                                <button onclick="window.print()"><i class="fa-solid fa-file-pdf"></i> Export Full Report (.pdf)</button>
+                            </div>
+                        </div>
+                        
+                        <button class="btn-primary admin-only" id="global-upload-btn" onclick="handleGlobalUpload()"><i class="fa-solid fa-cloud-arrow-up"></i> Data Upload</button>
+                    </div>
+
+                    <div class="system-icons">
+                        <div class="export-dropdown" id="dropdown-notif">
+                            <button class="circle-btn" onclick="toggleExportMenu('dropdown-notif')" title="Alerts & Notifications">
+                                <i class="fa-regular fa-bell"></i>
+                                <span class="notif-badge" id="notifBadge">0</span>
+                            </button>
+                            <div class="notif-dropdown-content" id="notifList">
+                                <div class="notif-item">Loading system checks...</div>
+                            </div>
+                        </div>
+                        <button class="circle-btn" onclick="toggleTheme()" title="Visual Theme"><i class="fa-solid fa-moon" id="themeIcon"></i></button>
+                        <button class="circle-btn" onclick="logout()" title="Logout" style="color: #ef4444;"><i class="fa-solid fa-right-from-bracket"></i></button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="tab-content-container">
+
+                <div class="print-header">
+                    <div>
+                        <h1>TRINITAS FOOD CORPORATION</h1>
+                        <p style="margin:0; font-size: 0.9rem; font-weight: 700; color: #666;">Panadero Monthly Report</p>
+                        <div class="print-kpi-settings" id="printKpiSettings"></div>
+                        <div class="print-date-left" id="printDateLeft"></div>
+                    </div>
+                    <div style="text-align: right;">
+                        <img src="trinitas-logo.jpeg" alt="Trinitas Logo" onerror="this.src='https://placehold.co/120x50/d32f2f/ffffff?text=TRINITAS'">
+                    </div>
+                </div>
+
+                <div id="tab-sales" class="tab-pane active">
+                    <div class="insights-panel" id="aiInsightsPanel">
+                        <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Executive AI Summary</h3>
+                        <ul class="insights-list" id="aiInsightsList"></ul>
+                    </div>
+                    <div id="salesContentArea"></div>
+                </div>
+
+                <div id="tab-financials" class="tab-pane">
+                    <div class="insights-panel" id="finInsightsPanel">
+                        <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Financial AI Summary</h3>
+                        <ul class="insights-list" id="finInsightsList"></ul>
+                    </div>
+                    <div id="finContentArea"></div>
+                </div>
+
+                <div id="tab-ops" class="tab-pane">
+                    <div id="opsContentArea"></div>
+                </div>
+
+                <div id="tab-compliance" class="tab-pane">
+                    <div id="complianceContentArea"></div>
+                </div>
+
+                <div id="tab-action" class="tab-pane">
+                    <div id="actionContentArea"></div>
+                </div>
+
+                <div id="tab-analytics" class="tab-pane">
+                    <div id="analyticsContentArea"></div>
+                </div>
+
+                <div id="tab-settings" class="tab-pane">
+                    <div id="healthContentArea"></div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <div class="admin-modal-backdrop" id="uploadModal">
+        <div class="admin-modal-box">
+            <div class="modal-topline">
+                <h2 id="modalTitle"><i class="fa-solid fa-database" style="color: var(--primary);"></i> Core Ingestion Hub</h2>
+                <button class="modal-close" onclick="closeAdminModal()" title="Cancel & Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <input type="hidden" id="activeUploadModule" value="">
+            
+            <div class="toast-info" id="uploadHelpText">
+                <i class="fa-solid fa-circle-info" style="font-size:1.8rem;"></i>
+                <div id="uploadInstructionHTML"></div>
+            </div>
+
+            <textarea class="paste-terminal" id="rawPasteArea" placeholder="Paste structural dataset block directly from Excel here..."></textarea>
+            
+            <div style="text-align: right; border-top: 1px solid var(--card-border); padding-top: 1.5rem;">
+                <button type="button" class="btn-primary" style="display:inline-flex;" onclick="processPastedData()">Execute System Matrix Update</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-modal-backdrop" id="settingsModal">
+        <div class="admin-modal-box" style="max-width: 500px;">
+            <div class="modal-topline">
+                <h2><i class="fa-solid fa-gear" style="color: var(--primary);"></i> Global KPI Settings</h2>
+                <button class="modal-close" onclick="closeSettingsModal()" title="Cancel & Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="toast-info">
+                <i class="fa-solid fa-circle-info" style="font-size:1.8rem;"></i>
+                <div>Define the system-wide targets and thresholds. Changes will reflect globally across all charts and exported reports.</div>
+            </div>
+
+            <div class="field-block">
+                <label>Branch Monthly Sales Target (₱)</label>
+                <div class="input-wrap">
+                    <i class="fa-solid fa-bullseye"></i>
+                    <input type="number" id="setTargetSales" value="1500000">
+                </div>
+            </div>
+
+            <div class="field-block">
+                <label>Audit PASS Threshold (>= %)</label>
+                <div class="input-wrap">
+                    <i class="fa-solid fa-check"></i>
+                    <input type="number" id="setPassKpi" value="90">
+                </div>
+            </div>
+
+            <div class="field-block">
+                <label>Audit REVIEW Threshold (>= %)</label>
+                <div class="input-wrap">
+                    <i class="fa-solid fa-eye"></i>
+                    <input type="number" id="setReviewKpi" value="75">
+                </div>
+            </div>
+            
+            <div style="text-align: right; border-top: 1px solid var(--card-border); padding-top: 1.5rem;">
+                <button class="btn-primary" style="display:inline-flex;" onclick="saveConfigValues()">Save Configuration</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const initialArenas = [
+            "MALANDAG", "MAKILALA 2", "MAKILALA 1", "MLANG", "MIDSAYAP", "CABANTIAN", 
+            "KM 5 BUHANGIN", "MANDUG", "SAN ANTONIO", "SANDAWA", "SAMAL 1", "SAMAL 2", 
+            "PENAPLATA 1", "PENAPLATA 2", "KAPUTIAN", "DIGOS APLAYA", "PADADA", "SULOP", 
+            "BANSALAN", "AGTON", "BALIOK", "BAYABAS", "CORONON"
+        ];
+        
+        const branchColors = [
+            '#D32F2F', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', 
+            '#6366f1', '#84cc16', '#eab308', '#06b6d4', '#0ea5e9', '#0284c7', '#64748b', '#a855f7', 
+            '#d946ef', '#f43f5e', '#fbbf24', '#34d399', '#0f172a', '#475569', '#334155'
+        ];
+        const branchColorMap = {};
+        [...initialArenas].sort().forEach((b, i) => { branchColorMap[b] = branchColors[i % branchColors.length]; });
+
+        let activeRole = null;
+        let currentTabId = 'tab-sales';
+        let salesFilterMode = 'daily';
+        let db = []; 
+        let currentViewData = []; 
+        let charts = {}; 
+
+        let kpiPass = 90;
+        let kpiReview = 75;
+        let kpiTargetSales = 1500000;
+
+        const tabConfigs = {
+            'tab-sales': { title: '<i class="fa-solid fa-chart-pie"></i> A. Sales Performance', showExport: true, showUpload: true, uploadParam: 'sales' },
+            'tab-financials': { title: '<i class="fa-solid fa-wallet"></i> B. Financial Metrics', showExport: true, showUpload: true, uploadParam: 'financials' },
+            'tab-ops': { title: '<i class="fa-solid fa-clipboard-check"></i> C. Operational Highlights', showExport: true, showUpload: true, uploadParam: 'ops_highlights' },
+            'tab-compliance': { title: '<i class="fa-solid fa-shield-halved"></i> D. Compliance Status', showExport: true, showUpload: true, uploadParam: 'compliance' },
+            'tab-action': { title: '<i class="fa-solid fa-rocket"></i> E. Action Plans', showExport: true, showUpload: true, uploadParam: 'action' },
+            'tab-analytics': { title: '<i class="fa-solid fa-fire-flame-curved"></i> F. Advanced Analytics', showExport: true, showUpload: false, uploadParam: null },
+            'tab-settings': { title: '<i class="fa-solid fa-gears"></i> G. System Config', showExport: false, showUpload: false, uploadParam: null }
+        };
+
+        window.onload = function() {
+            initDates();
+            generateParticles();
+            loadSettings();
+            
+            let dateStr = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('printDateLeft').innerText = dateStr;
+
+            document.getElementById('secPass').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') { executeAuth(); }
+            });
+        };
+
+        window.onclick = function(event) {
+            if (!event.target.matches('.circle-btn') && !event.target.closest('.circle-btn') && 
+                !event.target.matches('.btn-secondary') && !event.target.closest('.btn-secondary')) {
+                let dropdowns = document.getElementsByClassName("export-dropdown-content");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    if (dropdowns[i].parentElement.classList.contains('show')) dropdowns[i].parentElement.classList.remove('show');
+                }
+            }
+        }
+
+        function showToast(msg, type = "success") {
+            const container = document.getElementById('toastContainer');
+            if(!container) return;
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            if(type === 'error') {
+                toast.style.borderLeftColor = 'var(--accent-fail)';
+                toast.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color:var(--accent-fail); font-size:1.2rem;"></i> ${msg}`;
+            } else {
+                toast.innerHTML = `<i class="fa-solid fa-circle-check" style="color:var(--accent-success); font-size:1.2rem;"></i> ${msg}`;
+            }
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.animation = 'fadeOut 0.3s forwards'; setTimeout(()=>toast.remove(), 300); }, 3000);
+        }
+
+        function toggleExportMenu(id) { document.getElementById(id).classList.toggle("show"); }
+
+        function goHome() {
+            switchTab('tab-sales', document.getElementById('nav-sales'));
+        }
+
+        function loadSettings() {
+            let s = localStorage.getItem('trinitas_kpi_settings_v95');
+            if(s) {
+                let parsed = JSON.parse(s);
+                kpiPass = parsed.pass || 90; kpiReview = parsed.review || 75; kpiTargetSales = parsed.targetSales || 1500000;
+            }
+        }
+
+        function saveConfigValues() {
+            let p = parseFloat(document.getElementById('setPassKpi').value);
+            let r = parseFloat(document.getElementById('setReviewKpi').value);
+            let ts = parseFloat(document.getElementById('setTargetSales').value);
+            
+            if(isNaN(p) || isNaN(r) || isNaN(ts)) { showToast("Please enter valid numbers for KPIs", "error"); return; }
+            kpiPass = p; kpiReview = r; kpiTargetSales = ts; 
+            
+            localStorage.setItem('trinitas_kpi_settings_v95', JSON.stringify({pass: kpiPass, review: kpiReview, targetSales: kpiTargetSales}));
+            showToast("System configuration saved globally.");
+            runEngine();
+        }
+
+        function updatePassword() {
+            let p = document.getElementById('newAdminPass').value.trim();
+            if(p.length < 4) { showToast("Password must be at least 4 characters.", "error"); return; }
+            localStorage.setItem('trinitas_admin_pass', p);
+            document.getElementById('newAdminPass').value = "";
+            showToast("Administrator password updated successfully.");
+        }
+
+        function clearDB() {
+            const pass = document.getElementById('wipePassword').value;
+            const storedPass = localStorage.getItem('trinitas_admin_pass') || 'Panadero123';
+            if(pass !== storedPass) {
+                showToast("Incorrect administrative password. Wipe aborted.", "error");
+                return;
+            }
+            if(confirm("WARNING: This will permanently delete all records from the system. Are you absolutely sure?")) {
+                localStorage.removeItem('trinitas_v95_db');
+                alert("Database wiped successfully. Reloading system.");
+                location.reload();
+            }
+        }
+
+        window.backupDB = function() {
+            try {
+                const dataStr = JSON.stringify(db, null, 2);
+                const blob = new Blob([dataStr], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                let dateStr = new Date().toISOString().split('T')[0];
+                a.download = `Panadero_Backup_${dateStr}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast("Database backup downloaded successfully.");
+            } catch (e) {
+                showToast("Backup failed: " + e.message, "error");
+            }
+        };
+
+        // Decoupled DB Restore execution bound to static anchor
+        window.processRestore = function(event) {
+            const file = event.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let imported = JSON.parse(e.target.result);
+                    if(Array.isArray(imported)) {
+                        db = imported;
+                        saveDB();
+                        runEngine();
+                        showToast("Database restored successfully.");
+                    } else throw new Error("Invalid structure.");
+                } catch(err) {
+                    showToast("Invalid JSON format.", "error");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = ''; 
+        };
+
+        function initDates() {
+            const today = new Date();
+            const currDay = today.getDate();
+            const currMonth = today.getMonth(); 
+            const currYear = today.getFullYear();
+
+            const mNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+            let vm = document.getElementById('viewMonth'); 
+            mNames.forEach((m, i) => { vm.innerHTML += `<option value="${i+1}" ${i===currMonth?'selected':''}>${m}</option>`; });
+            
+            let vd = document.getElementById('viewDay');
+            for(let d=1; d<=31; d++) { vd.innerHTML += `<option value="${d}" ${d===currDay?'selected':''}>Day ${d}</option>`; }
+            vd.style.display = 'inline-block'; 
+
+            let vy = document.getElementById('viewYear'); 
+            for(let y=2025; y<=2050; y++) { vy.innerHTML += `<option value="${y}" ${y===currYear?'selected':''}>${y}</option>`; }
+        }
+
+        function generateParticles() {
+            const container = document.getElementById('particleField');
+            const icons = ['🥖', '🍞', '🥐', '🥨', '🧁', '🍩', '🍰', '🍪', '🥧', '🌾'];
+            container.innerHTML = '';
+            for(let i=0; i<40; i++) {
+                let div = document.createElement('div'); div.className = 'bakery-particle';
+                div.innerText = icons[Math.floor(Math.random() * icons.length)];
+                div.style.left = Math.random() * 100 + 'vw';
+                div.style.animationDelay = (Math.random() * 5) + 's';
+                div.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                div.style.fontSize = (Math.random() * 1.5 + 1.5) + 'rem';
+                container.appendChild(div);
+            }
+        }
+
+        function updateChartTheme() {
+            const cols = getChartColors();
+            for (let key in charts) {
+                if(charts[key] && charts[key].options && charts[key].options.scales) {
+                    if(charts[key].options.scales.x) {
+                        charts[key].options.scales.x.grid.color = cols.grid;
+                        charts[key].options.scales.x.ticks.color = cols.text;
+                    }
+                    if(charts[key].options.scales.y) {
+                        charts[key].options.scales.y.grid.color = cols.grid;
+                        charts[key].options.scales.y.ticks.color = cols.text;
+                    }
+                    if(charts[key].options.plugins && charts[key].options.plugins.legend && charts[key].options.plugins.legend.labels) {
+                        charts[key].options.plugins.legend.labels.color = cols.text;
+                    }
+                    charts[key].update();
+                }
+            }
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            if(body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                document.getElementById('themeIcon').className = 'fa-solid fa-moon';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                document.getElementById('themeIcon').className = 'fa-solid fa-sun';
+            }
+            if(activeRole) updateChartTheme();
+        }
+
+        function executeAuth() {
+            const p = document.getElementById('secPass').value.trim();
+            let storedPass = localStorage.getItem('trinitas_admin_pass') || 'Panadero123';
+
+            let role = document.getElementById('secUser').value;
+            let isValid = false;
+
+            if(role === 'AdminPanadero' && p === storedPass) isValid = true;
+            else if(role === 'Panadero' && p === 'Panadero123') isValid = true;
+
+            if(isValid) { 
+                activeRole = role; 
+                bootSystem(); 
+            } else { 
+                document.getElementById('authErrorMsg').style.display = 'block'; 
+            }
+        }
+
+        function logout() { location.reload(); }
+
+        function bootSystem() {
+            document.getElementById('auth-canvas').style.display = 'none';
+            document.getElementById('mainSystem').style.display = 'flex'; 
+            
+            document.querySelectorAll('.admin-only').forEach(el => {
+                if(activeRole === 'AdminPanadero') { el.style.display = ''; } 
+                else { el.style.display = 'none'; }
+            });
+            
+            loadDatabase(); 
+            switchTab('tab-sales', document.getElementById('nav-sales'));
+            runEngine(); 
+        }
+
+        function switchTab(targetId, elem) {
+            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+            if(elem) elem.classList.add('active');
+            document.querySelectorAll('.tab-pane').forEach(e => e.classList.remove('active'));
+            document.getElementById(targetId).classList.add('active');
+            currentTabId = targetId;
+            
+            updateGlobalHeader(targetId);
+            
+            let mainContent = document.getElementById('mainContentScrollArea');
+            if (mainContent) mainContent.scrollTop = 0;
+        }
+
+        function updateGlobalHeader(targetId) {
+            let conf = tabConfigs[targetId];
+            if(!conf) return;
+
+            document.getElementById('global-tab-title').innerHTML = conf.title;
+            
+            let isSales = (targetId === 'sales' || targetId === 'tab-sales');
+            document.getElementById('salesPillToggle').style.display = isSales ? 'flex' : 'none';
+            document.getElementById('viewDay').style.display = (isSales && salesFilterMode === 'daily') ? 'inline-block' : 'none';
+            
+            document.getElementById('headerDateControls').style.display = (targetId === 'tab-settings') ? 'none' : 'flex';
+
+            let expBtn = document.getElementById('global-export-dropdown');
+            let upBtn = document.getElementById('global-upload-btn');
+
+            expBtn.style.display = conf.showExport ? 'inline-block' : 'none';
+            
+            if(activeRole === 'AdminPanadero' && conf.showUpload) {
+                upBtn.style.display = 'flex';
+                if(conf.uploadParam === 'compliance') upBtn.style.background = 'var(--accent-fail)';
+                else upBtn.style.background = 'var(--primary)';
+            } else {
+                upBtn.style.display = 'none';
+            }
+        }
+
+        window.handleGlobalUpload = function() {
+            let conf = tabConfigs[currentTabId];
+            if(conf && conf.showUpload) openAdminModal(conf.uploadParam);
+        };
+
+        window.handleExport = function(type) {
+            let conf = tabConfigs[currentTabId];
+            if(!conf || !conf.showExport) { showToast("This module cannot be exported.", "error"); return; }
+            if (type === 'doc') {
+                exportModule('all', type);
+            } else {
+                exportModule('current', type);
+            }
+        };
+
+        function setSalesFilter(mode, elem) {
+            document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+            elem.classList.add('active');
+            salesFilterMode = mode;
+            document.getElementById('viewDay').style.display = (mode === 'daily') ? 'inline-block' : 'none';
+            runEngine(); 
+        }
+
+        function loadDatabase() {
+            let cache = localStorage.getItem('trinitas_v95_db');
+            try {
+                if(cache) { db = JSON.parse(cache); if(!Array.isArray(db)) db = []; } 
+                else { db = []; } 
+            } catch(e) { db = []; }
+        }
+
+        function saveDB() { 
+            let optimizedDb = db.filter(r => {
+                let hasSales = (r.salesData || []).some(v => v > 0);
+                let hasFin = (r.finGP || 0) > 0 || (r.finLabor || 0) > 0 || (r.finFood || 0) > 0 || (r.finNet || 0) !== 0;
+                let hasOps = (r.opsAcc || "") !== "" || (r.opsCha || "") !== "" || (r.opsIss || "") !== "";
+                let hasComp = (r.auditScore || 0) > 0;
+                let hasAct = (r.actSal || "") !== "" || (r.actCos || "") !== "" || (r.actMan || "") !== "" || (r.actMar || "") !== "";
+                return hasSales || hasFin || hasOps || hasComp || hasAct;
+            });
+
+            try {
+                localStorage.setItem('trinitas_v95_db', JSON.stringify(optimizedDb));
+                db = optimizedDb;
+            } catch (e) {
+                showToast("Warning: Database size limit reached. Please backup and clear old data.", "error");
+            }
+        }
+        
+        function openAdminModal(moduleType) { 
+            document.getElementById('activeUploadModule').value = moduleType;
+            let title = "", inst = "";
+            const mLabel = document.getElementById('viewMonth').options[document.getElementById('viewMonth').selectedIndex].text;
+            const yLabel = document.getElementById('viewYear').value;
+
+            if(moduleType === 'sales') {
+                title = `Upload Sales Matrix (${mLabel} ${yLabel})`;
+                inst = `<strong>Format LIMIT 32 COLUMNS:</strong> [BRANCH NAME] followed by up to 31 numeric day values.<br><span style="color:#10b981">Ex: MALANDAG 1200 1500 0 1400...</span>`;
+            } else if(moduleType === 'financials') {
+                title = `Upload Financial Matrix (${mLabel} ${yLabel})`;
+                inst = `<strong>Format STRICT 4 COLUMNS:</strong> [BRANCH] [GP %] [LABOR %] [FOOD %].<br><span style="color:#10b981">Ex: MALANDAG 45.5 15.2 30.1</span>`;
+            } else if(moduleType === 'compliance') {
+                title = `Upload Compliance Matrix (${mLabel} ${yLabel})`;
+                inst = `<strong>Format STRICT 5 COLUMNS:</strong> Tab-separated: [BRANCH] [ACCOMPLISHMENTS] [CHALLENGES] [ISSUES] [AUDIT SCORE %].<br><span style="color:#10b981">Ex: MALANDAG    High Sales    No Staff    Broken Oven    95.5</span>`;
+            } else if(moduleType === 'ops_highlights') {
+                title = `Upload Ops Highlights (${mLabel} ${yLabel})`;
+                inst = `<strong>Format STRICT 4 COLUMNS:</strong> Tab-separated: [BRANCH] [ACCOMPLISHMENTS] [CHALLENGES] [ISSUES].<br><span style="color:#10b981">Ex: MALANDAG    High Staff Retention    Machine Down    Missing Forms</span>`;
+            } else if(moduleType === 'action') {
+                title = `Upload Action Plans (${mLabel} ${yLabel})`;
+                inst = `<strong>Format STRICT 5 COLUMNS:</strong> Tab-separated: [BRANCH] [SALES GROWTH] [COST REDUCTION] [MANPOWER] [MARKETING].<br><span style="color:#10b981">Ex: MALANDAG    New Promo    Cut Overtime    Hire Cashier    Flyers</span>`;
+            } 
+
+            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-cloud-arrow-up" style="color:var(--primary)"></i> ${title}`;
+            document.getElementById('uploadInstructionHTML').innerHTML = inst;
+            
+            let modal = document.getElementById('uploadModal');
+            modal.style.display = 'flex'; 
+            // Slight delay to allow display flex to apply before opacity transition
+            setTimeout(() => { modal.classList.add('show'); }, 10);
+        }
+
+        function closeAdminModal() { 
+            let modal = document.getElementById('uploadModal');
+            modal.classList.remove('show'); 
+            setTimeout(() => { modal.style.display = 'none'; }, 200);
+            document.getElementById('rawPasteArea').value = '';
+        }
+
+        function cleanNum(val) {
+            if(val === undefined || val === null || val === "") return 0;
+            let str = val.toString().replace(/[^0-9.-]+/g,"");
+            if(str === "" || str === "-" || str === ".") return 0;
+            let parsed = parseFloat(str);
+            return isNaN(parsed) ? 0 : parsed;
+        }
+
+        function processPastedData() {
+            const m = parseInt(document.getElementById('viewMonth').value);
+            const y = parseInt(document.getElementById('viewYear').value);
+            const mod = document.getElementById('activeUploadModule').value;
+            const raw = document.getElementById('rawPasteArea').value;
+            
+            if(!raw.trim()) { 
+                closeAdminModal();
+                return; 
+            }
+
+            let lines = raw.split(/\r?\n/);
+            let parsedCount = 0;
+            let errorCount = 0;
+
+            for(let i = 0; i < lines.length; i++) {
+                try {
+                    let line = lines[i].trim();
+                    if(!line) continue;
+                    
+                    let tokens = line.split('\t');
+                    if(tokens.length <= 1) tokens = line.split(/ {2,}/); 
+                    tokens = tokens.map(t => t ? t.trim() : "");
+                    
+                    if(tokens.length === 0) continue;
+                    let branch = tokens[0].toUpperCase();
+                    if(!branch || branch.includes("BRANCH") || branch.includes("DAY") || branch === "RANK") continue;
+
+                    if (mod === 'sales') tokens = tokens.slice(0, 32); 
+                    if (mod === 'financials') tokens = tokens.slice(0, 5); 
+                    if (mod === 'compliance') tokens = tokens.slice(0, 6); 
+                    if (mod === 'ops_highlights') tokens = tokens.slice(0, 5); 
+                    if (mod === 'action') tokens = tokens.slice(0, 6);
+
+                    let record = db.find(e => e.year === y && e.month === m && e.branch.toUpperCase() === branch);
+                    if(!record) {
+                        record = { year: y, month: m, branch: branch, salesData: new Array(31).fill(0), finGP:0, finLabor:0, finFood:0, finNet:0, auditScore:0, opsAcc:"", opsCha:"", opsIss:"", actSal:"", actCos:"", actMan:"", actMar:"" };
+                        db.push(record);
+                    }
+
+                    if(mod === 'sales') {
+                        for(let d=1; d<tokens.length && d<=31; d++) { record.salesData[d-1] = cleanNum(tokens[d]); }
+                    } else if (mod === 'financials') {
+                        record.finGP = cleanNum(tokens[1]); record.finLabor = cleanNum(tokens[2]); record.finFood = cleanNum(tokens[3]);
+                        if(tokens[4]) record.finNet = cleanNum(tokens[4]);
+                    } else if (mod === 'compliance') {
+                        if (tokens.length <= 2) {
+                            record.auditScore = cleanNum(tokens[1]);
+                        } else {
+                            record.auditScore = cleanNum(tokens[4]);
+                        }
+                    } else if (mod === 'ops_highlights') {
+                        record.opsAcc = tokens[1] || ""; record.opsCha = tokens[2] || ""; record.opsIss = tokens[3] || "";
+                    } else if (mod === 'action') {
+                        record.actSal = tokens[1] || ""; record.actCos = tokens[2] || ""; record.actMan = tokens[3] || ""; record.actMar = tokens[4] || "";
+                    }
+                    parsedCount++;
+                } catch(e) {
+                    errorCount++;
+                }
+            }
+
+            if(parsedCount > 0) {
+                saveDB(); 
+                closeAdminModal();
+                runEngine(); 
+                showToast(`System updated: Parsed ${parsedCount} rows.`);
+                if(errorCount > 0) showToast(`Ignored ${errorCount} malformed rows.`, "error");
+            } else {
+                closeAdminModal();
+                showToast("No valid data rows found to process.", "error");
+            }
+        }
+
+        function filterTable(tbodyId, inputId) {
+            const searchVal = document.getElementById(inputId).value.toUpperCase();
+            const rows = document.getElementById(tbodyId).getElementsByTagName('tr');
+            if(!rows) return;
+            for(let i=0; i<rows.length; i++) {
+                let branchName = rows[i].getElementsByTagName('td')[1]?.innerText.toUpperCase();
+                if(branchName && branchName.includes(searchVal)) rows[i].style.display = '';
+                else rows[i].style.display = 'none';
+            }
+        }
+
+        function animateValue(obj, start, end, duration, prefix = '', suffix = '') {
+            if(!obj) return;
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const easeProgress = 1 - Math.pow(1 - progress, 4);
+                let current = progress === 1 ? end : start + (end - start) * easeProgress;
+                
+                if (Number.isInteger(end)) {
+                    obj.innerHTML = prefix + Math.floor(current).toLocaleString('en-US') + suffix;
+                } else {
+                    obj.innerHTML = prefix + current.toLocaleString('en-US', {minimumFractionDigits: 1, maximumFractionDigits: 1}) + suffix;
+                }
+                if (progress < 1) window.requestAnimationFrame(step);
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        function generateInsights() {
+            // --- Sales Insights ---
+            const list = document.getElementById('aiInsightsList');
+            let totalSales = currentViewData.reduce((s, r) => s + (r.calcSales || 0), 0);
+            
+            let insights = [];
+            let topBranch = currentViewData[0];
+            let failAudit = currentViewData.filter(r => (r.auditScore || 0) > 0 && r.auditScore < kpiReview).length;
+            let negProfit = currentViewData.filter(r => (r.finNet || 0) < 0).length;
+            let activeBranches = currentViewData.filter(r => (r.calcSales || 0) > 0).length;
+
+            if(totalSales === 0) {
+                insights.push(`<i class="fa-solid fa-hourglass-empty"></i> System operating optimally. Awaiting sales data to formulate executive insights.`);
+            } else {
+                insights.push(`<i class="fa-solid fa-chart-line"></i> Total calculated volume is <strong>₱${totalSales.toLocaleString()}</strong> across ${activeBranches} active branches.`);
+                if(topBranch && topBranch.calcSales > 0) {
+                    let pct = totalSales > 0 ? ((topBranch.calcSales / totalSales) * 100).toFixed(1) : 0;
+                    insights.push(`<i class="fa-solid fa-trophy"></i> <strong>${topBranch.branch}</strong> is the dominant arena, contributing <strong>${pct}%</strong> of total volume.`);
+                }
+                if(failAudit > 0) insights.push(`<i class="fa-solid fa-triangle-exclamation" style="color:var(--accent-fail)"></i> <strong>Alert:</strong> ${failAudit} branches failed the recent compliance audit (Score < ${kpiReview}%).`);
+                if(negProfit > 0) insights.push(`<i class="fa-solid fa-sack-xmark" style="color:var(--accent-fail)"></i> <strong>Warning:</strong> ${negProfit} branches reported negative net profit contribution.`);
+            }
+            if (list) list.innerHTML = insights.map(i => `<li>${i}</li>`).join('');
+
+            // Notifs
+            let notifs = [];
+            if(failAudit > 0) notifs.push(`<strong>${failAudit} branches</strong> require immediate compliance intervention.`);
+            if(negProfit > 0) notifs.push(`<strong>${negProfit} branches</strong> are operating at a financial loss.`);
+            
+            let badge = document.getElementById('notifBadge');
+            let nList = document.getElementById('notifList');
+            if(notifs.length > 0) {
+                if (badge) { badge.style.display = 'block'; badge.innerText = notifs.length; }
+                if (nList) nList.innerHTML = notifs.map(n => `<div class="notif-item"><i class="fa-solid fa-circle-exclamation" style="color:var(--accent-fail); margin-right:5px;"></i> ${n}</div>`).join('');
+            } else {
+                if (badge) badge.style.display = 'none';
+                if (nList) nList.innerHTML = `<div class="notif-item" style="color:var(--text-muted); text-align:center;">System operating within optimal parameters.</div>`;
+            }
+
+            // --- Financial Insights ---
+            const finList = document.getElementById('finInsightsList');
+            let activeFin = currentViewData.filter(r => (r.finGP || 0) > 0 || (r.finNet || 0) !== 0);
+            let finInsights = [];
+            
+            if(activeFin.length === 0) {
+                finInsights.push(`<i class="fa-solid fa-hourglass-empty"></i> System operating optimally. Awaiting financial data to formulate insights.`);
+            } else {
+                let count = activeFin.length;
+                let totalNet = activeFin.reduce((s,r) => s+(r.finNet || 0), 0) || 0;
+                let avgGP = activeFin.reduce((s,r) => s+(r.finGP || 0), 0) / count;
+                let negProfitCount = activeFin.filter(r => (r.finNet || 0) < 0).length;
+                let topFin = [...activeFin].sort((a,b) => (b.finNet || 0) - (a.finNet || 0))[0];
+
+                finInsights.push(`<i class="fa-solid fa-sack-dollar"></i> Total System Net Profit Contribution is <strong>₱${totalNet.toLocaleString('en-US')}</strong> with an average Gross Profit (GP) of <strong>${avgGP.toFixed(1)}%</strong>.`);
+                if(topFin && topFin.finNet > 0) {
+                    finInsights.push(`<i class="fa-solid fa-money-bill-trend-up" style="color:var(--accent-success)"></i> <strong>${topFin.branch}</strong> generated the highest net profit contribution of <strong>₱${topFin.finNet.toLocaleString('en-US')}</strong>.`);
+                }
+                if(negProfitCount > 0) {
+                    finInsights.push(`<i class="fa-solid fa-triangle-exclamation" style="color:var(--accent-fail)"></i> <strong>Alert:</strong> ${negProfitCount} branch(es) are currently operating at a net loss and require immediate financial review.`);
+                } else {
+                    finInsights.push(`<i class="fa-solid fa-check-circle" style="color:var(--accent-success)"></i> All reporting branches are operating with a positive net profit.`);
+                }
+            }
+            if(finList) finList.innerHTML = finInsights.map(i => `<li>${i}</li>`).join('');
+        }
+
+        function updatePrintHeader() {
+            let pSet = document.getElementById('printKpiSettings');
+            if (pSet) pSet.innerHTML = `Global Settings &rarr; Target Sales: ₱${kpiTargetSales.toLocaleString()} | Audit Pass: &ge;${kpiPass}% | Audit Review: &ge;${kpiReview}%`;
+        }
+
+        function runEngine() {
+            const m = parseInt(document.getElementById('viewMonth').value);
+            const y = parseInt(document.getElementById('viewYear').value);
+            const d = parseInt(document.getElementById('viewDay').value);
+            
+            // Build the currentViewData cleanly ensuring 23 arenas ALWAYS exist in memory for constant layout
+            currentViewData = [];
+            initialArenas.forEach(b => {
+                let record = db.find(e => e.year === y && e.month === m && e.branch.toUpperCase() === b.toUpperCase());
+                if(!record) {
+                    record = { year: y, month: m, branch: b, salesData: new Array(31).fill(0), finGP:0, finLabor:0, finFood:0, finNet:0, auditScore:0, opsAcc:"", opsCha:"", opsIss:"", actSal:"", actCos:"", actMan:"", actMar:"" };
+                }
+                currentViewData.push(record);
+            });
+
+            currentViewData.forEach(r => {
+                if(salesFilterMode === 'daily') {
+                    r.calcSales = (r.salesData||[])[d - 1] || 0; 
+                }
+                else if(salesFilterMode === 'weekly') {
+                    let start = Math.max(0, d - 7);
+                    r.calcSales = (r.salesData||[]).slice(start, d).reduce((a,b)=>a+b,0);
+                }
+                else r.calcSales = (r.salesData || []).reduce((a,b)=>a+b, 0);
+            });
+            currentViewData.sort((a,b) => (b.calcSales || 0) - (a.calcSales || 0));
+
+            updatePrintHeader();
+            generateInsights();
+            
+            // Fire all renders
+            renderSalesTab(); renderFinancialTab(); renderOpsTab(); renderComplianceTab(); renderActionTab(); renderAnalyticsTab(); renderHealthTab();
+        }
+
+        window.toggleAllBranches = function() {
+            let btn = document.getElementById('selectAllBtn');
+            let isActivating = !btn.classList.contains('active');
+            if (isActivating) {
+                btn.classList.add('active');
+                btn.innerHTML = `<i class="fa-solid fa-check-double"></i> <span>Deselect All</span>`;
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = `<i class="fa-solid fa-layer-group"></i> <span>Toggle Branches</span>`;
+            }
+            if(!charts.sales) return;
+            charts.sales.data.datasets.forEach(ds => ds.hidden = !isActivating);
+            charts.sales.update();
+            document.querySelectorAll('.branch-checkbox').forEach(cb => cb.checked = isActivating);
+        };
+
+        const chartFont = { family: "'Plus Jakarta Sans', sans-serif", weight: '600' };
+        function getChartColors() {
+            const isDark = document.body.getAttribute('data-theme') === 'dark';
+            return { grid: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)', text: isDark ? '#a1a1aa' : '#64748b' };
+        }
+
+        // ================= TAB RENDER ENGINES (ALWAYS VISIBLE DOM) =================
+
+        function renderSalesTab() {
+            const container = document.getElementById('salesContentArea');
+            let totalDynamicSales = currentViewData.reduce((s, r) => s + (r.calcSales || 0), 0);
+            let totalMonthlySales = currentViewData.reduce((s, r) => s + (r.salesData || []).reduce((a,b)=>a+b,0), 0);
+            
+            let tbodyHTML = currentViewData.map((r, i) => {
+                let localTarget = salesFilterMode === 'monthly' ? kpiTargetSales : (kpiTargetSales / 31) * (salesFilterMode === 'daily' ? 1 : 7);
+                let achPct = localTarget > 0 ? (r.calcSales / localTarget) * 100 : 0;
+                let achColor = achPct >= 100 ? 'var(--accent-success)' : (achPct >= 80 ? 'var(--accent-gold)' : 'var(--accent-fail)');
+                let maxSales = currentViewData[0] ? currentViewData[0].calcSales : 1;
+                let pct = maxSales > 0 ? (r.calcSales / maxSales) * 100 : 0;
+                let track = `<div class="track-rail"><div class="track-fill" style="width:${pct}%"></div></div>`;
+                return `<tr>
+                    <td>#${i+1}</td>
+                    <td style="font-weight:800">${r.branch}</td>
+                    <td style="color:var(--text-muted)">₱${localTarget.toLocaleString('en-US', {maximumFractionDigits:0})}</td>
+                    <td style="font-family:monospace; font-weight:800; font-size:1.1rem">₱${(r.calcSales||0).toLocaleString('en-US')}</td>
+                    <td style="font-weight:800; color:${achColor}">${achPct.toFixed(1)}%</td>
+                    <td>${track}</td>
+                </tr>`;
+            }).join('');
+
+            let topBranchName = currentViewData[0] && totalDynamicSales > 0 ? currentViewData[0].branch : '-';
+            let topBranchSales = currentViewData[0] && totalDynamicSales > 0 ? currentViewData[0].calcSales : 0;
+            
+            let top5 = currentViewData.slice(0,5);
+            let top10 = currentViewData.slice(0,10);
+
+            let alphaSorted = [...currentViewData].sort((a,b) => a.branch.localeCompare(b.branch));
+            let top5Names = top5.map(b => b.branch);
+
+            let currDay = parseInt(document.getElementById('viewDay').value) || 15;
+            let multiplier = salesFilterMode === 'monthly' ? 1 : (31 / currDay);
+            let forecastedSystemTotal = totalDynamicSales * multiplier;
+
+            let html = `
+                <div class="kpi-matrix">
+                    <div class="kpi-card" style="--primary: var(--accent-success)">
+                        <div class="kpi-details"><p>TOTAL MONTHLY INCOME</p><h2 style="color: var(--accent-success);" id="animMonthly">₱0</h2></div>
+                        <div class="kpi-icon" style="color: var(--accent-success)"><i class="fa-solid fa-chart-simple"></i></div>
+                    </div>
+                    <div class="kpi-card" style="--primary: var(--accent-gold)">
+                        <div class="kpi-details" style="text-align:center; width:100%;">
+                            <p>DOMINANT BRANCH RANKING</p>
+                            <h2 style="color: var(--accent-gold); margin-top:0.3rem;">${topBranchName}</h2>
+                            <div style="font-size:0.85rem; font-weight:700; color:var(--text-muted); margin-top:0.25rem;">Income: ₱${topBranchSales.toLocaleString('en-US')}</div>
+                        </div>
+                    </div>
+                    <div class="kpi-card" style="--primary: var(--accent-info)">
+                        <div class="kpi-details" style="text-align:right;"><p>${salesFilterMode === 'monthly' ? 'EOM SYSTEM FORECAST' : salesFilterMode.toUpperCase() + ' INCOME'}</p><h2 id="animSalesVol" style="color:var(--accent-info);">₱0</h2></div>
+                        <div class="kpi-icon" style="color: var(--accent-info)"><i class="fa-solid fa-vault"></i></div>
+                    </div>
+                </div>
+
+                <div class="arena-podium-deck">
+                    <div class="podium-column rank-2"><div class="trophy-container"><i class="fa-solid fa-medal"></i></div><div class="podium-name">${top5[1]?top5[1].branch:'-'}</div><div class="podium-revenue">₱${top5[1]?(top5[1].calcSales||0).toLocaleString('en-US'):'0'}</div></div>
+                    <div class="podium-column rank-1"><div class="trophy-container"><i class="fa-solid fa-trophy"></i></div><div class="podium-name">${top5[0]?top5[0].branch:'-'}</div><div class="podium-revenue">₱${top5[0]?(top5[0].calcSales||0).toLocaleString('en-US'):'0'}</div></div>
+                    <div class="podium-column rank-3"><div class="trophy-container"><i class="fa-solid fa-award"></i></div><div class="podium-name">${top5[2]?top5[2].branch:'-'}</div><div class="podium-revenue">₱${top5[2]?(top5[2].calcSales||0).toLocaleString('en-US'):'0'}</div></div>
+                </div>
+
+                <div class="chart-composite">
+                    <h3>Top 10 Branches Overview</h3>
+                    <div class="chart-wrapper"><canvas id="top10BarChart"></canvas></div>
+                </div>
+
+                <div class="chart-composite">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
+                        <h3 style="margin:0;">Performance Matrix Graphical Visualization</h3>
+                        <button class="select-all-btn" id="selectAllBtn" onclick="toggleAllBranches()">
+                            <i class="fa-solid fa-layer-group"></i> <span>Toggle Branches</span>
+                        </button>
+                    </div>
+                    <div class="chart-checkbox-container" id="chartCheckboxes"></div>
+                    <div class="chart-wrapper"><canvas id="salesChart"></canvas></div>
+                </div>
+
+                <div class="data-table-wrapper">
+                    <div class="table-toolbar">
+                        <h3 style="font-weight: 800;">Target vs Actual Ledger</h3>
+                        <input type="text" class="search-input" id="searchSales" placeholder="Search specific branch..." onkeyup="filterTable('salesTableBody', 'searchSales')">
+                    </div>
+                    <table class="data-table">
+                        <thead><tr><th>Rank</th><th>Arena Branch</th><th>Sales Target</th><th>Sales Achieved</th><th>% Achieved</th><th>Distribution Track</th></tr></thead>
+                        <tbody id="salesTableBody">${tbodyHTML}</tbody>
+                    </table>
+                </div>
+            `;
+            container.innerHTML = html;
+
+            animateValue(document.getElementById('animSalesVol'), 0, salesFilterMode==='monthly' ? forecastedSystemTotal : totalDynamicSales, 1000, '₱');
+            animateValue(document.getElementById('animMonthly'), 0, totalMonthlySales, 1000, '₱');
+
+            let cbContainer = document.getElementById('chartCheckboxes');
+            alphaSorted.forEach((b, i) => { 
+                let isTop5 = top5Names.includes(b.branch) && totalDynamicSales > 0;
+                let isChecked = isTop5 ? 'checked' : '';
+                cbContainer.innerHTML += `<label class="chart-checkbox-label" style="border-left: 3px solid ${branchColorMap[b.branch]}"><input type="checkbox" class="branch-checkbox" ${isChecked} onchange="toggleChartDataset(${i}, this.checked)"> ${b.branch}</label>`; 
+            });
+
+            const cols = getChartColors();
+            if(charts.sales) charts.sales.destroy();
+            
+            charts.sales = new Chart(document.getElementById('salesChart').getContext('2d'), {
+                type: 'line',
+                data: { 
+                    labels: Array.from({length:31}, (_,i)=>`D${i+1}`), 
+                    datasets: alphaSorted.map((b,i) => ({ 
+                        label: b.branch, 
+                        data: b.salesData || new Array(31).fill(0), 
+                        borderColor: branchColorMap[b.branch], 
+                        tension: 0.3, 
+                        pointRadius: 2,
+                        hidden: !(top5Names.includes(b.branch) && totalDynamicSales > 0)
+                    })) 
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: {color: cols.grid}, ticks: {color: cols.text, font:chartFont} }, y: { grid: {color: cols.grid}, ticks: {color: cols.text, font:chartFont} } } }
+            });
+
+            if(charts.top10Bar) charts.top10Bar.destroy();
+            charts.top10Bar = new Chart(document.getElementById('top10BarChart').getContext('2d'), {
+                type: 'bar',
+                data: { labels: top10.map(b=>b.branch.substring(0,7)), datasets: [{ label: 'Sales Volume', data: top10.map(b=>b.calcSales), backgroundColor: top10.map(b=>branchColorMap[b.branch]), borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: {color: cols.grid}, ticks: {color: cols.text, font:chartFont} }, y: { grid: {color: cols.grid}, ticks: {color: cols.text, font:chartFont} } } }
+            });
+        }
+
+        function renderFinancialTab() {
+            const container = document.getElementById('finContentArea');
+            let count = currentViewData.length || 1;
+            let totalNet = currentViewData.reduce((s,r) => s+(r.finNet||0), 0);
+            let avgGP = (currentViewData.reduce((s,r) => s+(r.finGP||0), 0) / count) || 0;
+            let avgLab = (currentViewData.reduce((s,r) => s+(r.finLabor||0), 0) / count) || 0;
+            let avgFood = (currentViewData.reduce((s,r) => s+(r.finFood||0), 0) / count) || 0;
+            let finSort = [...currentViewData].sort((a,b) => (b.finNet||0) - (a.finNet||0));
+
+            let tbodyHTML = finSort.map(r => `<tr><td style="font-weight:800">${r.branch}</td><td>${r.finGP||0}%</td><td>${r.finLabor||0}%</td><td>${r.finFood||0}%</td><td style="text-align:right; font-family:monospace; font-weight:800; color:${(r.finNet||0) < 0 ? 'var(--accent-fail)' : '#10b981'}; font-size:1.1rem;">₱${(r.finNet||0).toLocaleString('en-US')}</td></tr>`).join('');
+
+            container.innerHTML = `
+                <div class="kpi-matrix">
+                    <div class="kpi-card" style="--primary: #8b5cf6"><div class="kpi-details"><p>Sys. Net Profit Contribution</p><h2 id="animNet">₱0</h2></div><div class="kpi-icon" style="color: #8b5cf6"><i class="fa-solid fa-sack-dollar"></i></div></div>
+                    <div class="kpi-card" style="--primary: var(--accent-info)"><div class="kpi-details"><p>Average Gross Profit (GP)</p><h2 id="animGP">0%</h2></div><div class="kpi-icon" style="color: var(--accent-info)"><i class="fa-solid fa-percent"></i></div></div>
+                    <div class="kpi-card" style="--primary: #ef4444"><div class="kpi-details"><p>Average Labor Cost</p><h2 id="animLab">0%</h2></div><div class="kpi-icon" style="color: #ef4444"><i class="fa-solid fa-users-gear"></i></div></div>
+                    <div class="kpi-card" style="--primary: var(--accent-gold)"><div class="kpi-details"><p>Average Food Cost</p><h2 id="animFood">0%</h2></div><div class="kpi-icon" style="color: var(--accent-gold)"><i class="fa-solid fa-wheat-awn"></i></div></div>
+                </div>
+
+                <div class="chart-grid-2">
+                    <div class="chart-composite"><h3>Cost Analysis Stack (Top 10 Branches)</h3><div class="chart-wrapper"><canvas id="finBarChart"></canvas></div></div>
+                    <div class="chart-composite"><h3>System Average Distribution</h3><div class="chart-wrapper"><canvas id="finDoughnutChart"></canvas></div></div>
+                </div>
+
+                <div class="data-table-wrapper">
+                    <div class="table-toolbar">
+                        <h3 style="font-weight: 800;">Financial Ledger</h3>
+                        <input type="text" class="search-input" id="searchFin" placeholder="Search specific branch..." onkeyup="filterTable('finTableBody', 'searchFin')">
+                    </div>
+                    <table class="data-table">
+                        <thead><tr><th>Branch</th><th>GP %</th><th>Labor Cost %</th><th>Food Cost %</th><th style="text-align:right;">Net Profit Contrib.</th></tr></thead>
+                        <tbody id="finTableBody">${tbodyHTML}</tbody>
+                    </table>
+                </div>
+            `;
+
+            animateValue(document.getElementById('animNet'), 0, totalNet, 1000, '₱');
+            animateValue(document.getElementById('animGP'), 0, avgGP, 1000, '', '%');
+            animateValue(document.getElementById('animLab'), 0, avgLab, 1000, '', '%');
+            animateValue(document.getElementById('animFood'), 0, avgFood, 1000, '', '%');
+
+            const cols = getChartColors();
+            let top10 = finSort.slice(0,10);
+            if(charts.finBar) charts.finBar.destroy();
+            charts.finBar = new Chart(document.getElementById('finBarChart'), {
+                type: 'bar',
+                data: { labels: top10.map(b=>b.branch.substring(0,7)), datasets: [ { label: 'Food Cost %', data: top10.map(b=>b.finFood||0), backgroundColor: '#f59e0b' }, { label: 'Labor Cost %', data: top10.map(b=>b.finLabor||0), backgroundColor: '#ef4444' }, { label: 'GP %', data: top10.map(b=>b.finGP||0), backgroundColor: '#3b82f6' } ] },
+                options: { responsive:true, maintainAspectRatio:false, scales: { x: { stacked: true, grid: {color: cols.grid}, ticks: {color: cols.text, font:chartFont} }, y: { stacked: true, grid: {color: cols.grid}, ticks: {color: cols.text, font:chartFont} } }, plugins: { legend: { labels: { color: cols.text, font:chartFont } } } }
+            });
+
+            if(charts.finDoughnut) charts.finDoughnut.destroy();
+            charts.finDoughnut = new Chart(document.getElementById('finDoughnutChart'), {
+                type: 'doughnut',
+                data: { labels: ['Food Cost', 'Labor Cost', 'Other/Profit Margin'], datasets: [{ data: [avgFood||0.1, avgLab||0.1, Math.max(0.1, 100 - avgFood - avgLab)], backgroundColor: ['#f59e0b', '#ef4444', '#10b981'], borderWidth:0 }] },
+                options: { responsive:true, maintainAspectRatio:false, plugins: { legend: { position: 'bottom', labels: { color: cols.text, font:chartFont } } }, cutout: '75%' }
+            });
+        }
+
+        function renderOpsTab() {
+            const container = document.getElementById('opsContentArea');
+            let tbodyHTML = currentViewData.map(r => `<tr><td style="font-weight:800">${r.branch}</td><td><p>${r.opsAcc || '-'}</p></td><td><p>${r.opsCha || '-'}</p></td><td><p>${r.opsIss || '-'}</p></td></tr>`).join('');
+
+            container.innerHTML = `
+                <div class="data-table-wrapper">
+                    <div class="table-toolbar">
+                        <h3 style="font-weight: 800;">Operational Highlights Data Table</h3>
+                        <input type="text" class="search-input" id="searchOpsQual" placeholder="Search specific branch..." onkeyup="filterTable('opsQualTableBody', 'searchOpsQual')">
+                    </div>
+                    <table class="data-table">
+                        <thead><tr><th>Branch</th><th>Accomplishments</th><th>Challenges</th><th>Audit Issues</th></tr></thead>
+                        <tbody id="opsQualTableBody">${tbodyHTML}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderComplianceTab() {
+            const container = document.getElementById('complianceContentArea');
+            let meanAudit = currentViewData.length > 0 ? currentViewData.reduce((s,r)=>s+(r.auditScore||0), 0)/currentViewData.length : 0;
+            let auditSort = [...currentViewData].sort((a,b)=> (b.auditScore||0) - (a.auditScore||0));
+            
+            let passCount = currentViewData.filter(r => (r.auditScore||0) >= kpiPass).length;
+            let reviewCount = currentViewData.filter(r => (r.auditScore||0) >= kpiReview && (r.auditScore||0) < kpiPass).length;
+            let failCount = currentViewData.filter(r => (r.auditScore||0) > 0 && (r.auditScore||0) < kpiReview).length;
+
+            if (passCount === 0 && reviewCount === 0 && failCount === 0) passCount = 0.01; 
+
+            let tbodyHTML = auditSort.map(r => {
+                let status = (r.auditScore||0) >= kpiPass ? `<span class="status-badge status-active">PASS</span>` : ((r.auditScore||0) >= kpiReview ? `<span class="status-badge status-review">REVIEW</span>` : ((r.auditScore||0) > 0 ? `<span class="status-badge status-fail">FAILED</span>` : `<span class="status-badge status-dormant">PENDING</span>`));
+                let track = `<div class="track-rail"><div class="track-fill" style="width:${r.auditScore||0}%; background:linear-gradient(90deg, #10b981, #34d399)"></div></div>`;
+                if((r.auditScore||0) > 0 && (r.auditScore||0) < kpiReview) track = `<div class="track-rail"><div class="track-fill" style="width:${r.auditScore||0}%; background:linear-gradient(90deg, #991b1b, #ef4444)"></div></div>`;
+                if((r.auditScore||0) >= kpiReview && (r.auditScore||0) < kpiPass) track = `<div class="track-rail"><div class="track-fill" style="width:${r.auditScore||0}%; background:linear-gradient(90deg, #b45309, #f59e0b)"></div></div>`;
+                return `<tr><td style="font-weight:800">${r.branch}</td><td>${status}</td><td>${track}</td><td style="text-align:right; font-family:monospace; font-weight:800; font-size:1.1rem">${r.auditScore||0}%</td></tr>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="chart-grid-2">
+                    <div class="chart-composite"><h3>Audit Results Matrix (Compliance Scores)</h3><div class="chart-wrapper"><canvas id="auditRadarChart"></canvas></div></div>
+                    <div class="chart-composite" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                        <h3 style="margin-bottom: 0;">System Mean Compliance</h3>
+                        <h1 id="animMeanAudit" style="font-size: 4rem; color: var(--accent-success); font-weight: 800; margin: 1rem 0;">0%</h1>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; font-weight: 700;">Average score across operational branches</p>
+                        <div style="width: 100%; height: 120px; margin-top:1rem;"><canvas id="auditStatusChart"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="data-table-wrapper">
+                    <div class="table-toolbar">
+                        <h3 style="font-weight: 800;">Audit Leaderboard</h3>
+                        <input type="text" class="search-input" id="searchCompliance" placeholder="Search specific branch..." onkeyup="filterTable('complianceTableBody', 'searchCompliance')">
+                    </div>
+                    <table class="data-table">
+                        <thead><tr><th>Branch</th><th>Status</th><th>Audit Bar</th><th style="text-align:right;">Audit Score %</th></tr></thead>
+                        <tbody id="complianceTableBody">${tbodyHTML}</tbody>
+                    </table>
+                </div>
+            `;
+
+            animateValue(document.getElementById('animMeanAudit'), 0, meanAudit, 1000, '', '%');
+
+            let topAudits = auditSort.slice(0,8);
+            const cols = getChartColors();
+            if(charts.auditRadar) charts.auditRadar.destroy();
+            charts.auditRadar = new Chart(document.getElementById('auditRadarChart'), {
+                type: 'polarArea',
+                data: { labels: topAudits.map(b=>b.branch), datasets: [{ data: topAudits.map(b=>b.auditScore||0), backgroundColor: topAudits.map(()=>`rgba(16, 185, 129, 0.4)`), borderColor: '#10b981' }] },
+                options: { responsive:true, maintainAspectRatio:false, scales: { r: { grid: { color: cols.grid }, ticks: { display: false } } }, plugins: { legend: { position: 'right', labels: { color: cols.text, font:chartFont } } } }
+            });
+
+            if(charts.auditStatus) charts.auditStatus.destroy();
+            charts.auditStatus = new Chart(document.getElementById('auditStatusChart'), {
+                type: 'doughnut',
+                data: { labels: [`Pass (${kpiPass}%+)`, `Review (${kpiReview}-${kpiPass-1}%)`, `Fail (<${kpiReview}%)`], datasets: [{ data: [passCount||0.1, reviewCount||0.1, failCount||0.1], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth:0 }] },
+                options: { responsive:true, maintainAspectRatio:false, plugins: { legend: { display:false } }, cutout: '65%' }
+            });
+        }
+
+        function renderActionTab() {
+            const container = document.getElementById('actionContentArea');
+            let tbodyHTML = currentViewData.map(r => {
+                let auditBadge = '';
+                if((r.auditScore||0) > 0) {
+                    if((r.auditScore||0) >= kpiPass) auditBadge = `<span class="status-badge status-active" style="padding:0.2rem 0.4rem; font-size:0.55rem; margin-left:0.5rem; vertical-align:middle;">PASS</span>`;
+                    else if((r.auditScore||0) >= kpiReview) auditBadge = `<span class="status-badge status-review" style="padding:0.2rem 0.4rem; font-size:0.55rem; margin-left:0.5rem; vertical-align:middle;">REVIEW</span>`;
+                    else auditBadge = `<span class="status-badge status-fail" style="padding:0.2rem 0.4rem; font-size:0.55rem; margin-left:0.5rem; vertical-align:middle;">FAIL</span>`;
+                } else {
+                    auditBadge = `<span class="status-badge status-dormant" style="padding:0.2rem 0.4rem; font-size:0.55rem; margin-left:0.5rem; vertical-align:middle;">NO AUDIT</span>`;
+                }
+
+                return `<tr>
+                    <td style="font-weight:800">${r.branch} ${auditBadge}</td>
+                    <td><p>${r.actSal || '-'}</p></td>
+                    <td><p>${r.actCos || '-'}</p></td>
+                    <td><p>${r.actMan || '-'}</p></td>
+                    <td><p>${r.actMar || '-'}</p></td>
+                </tr>`;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="data-table-wrapper">
+                    <div class="table-toolbar">
+                        <h3 style="font-weight: 800;">Action Plans Data Table</h3>
+                        <input type="text" class="search-input" id="searchActionQual" placeholder="Search specific branch..." onkeyup="filterTable('actionQualTableBody', 'searchActionQual')">
+                    </div>
+                    <table class="data-table">
+                        <thead><tr><th>Branch</th><th>Sales Growth</th><th>Cost Reduction</th><th>Manpower Plans</th><th>Marketing Activities</th></tr></thead>
+                        <tbody id="actionQualTableBody">${tbodyHTML}</tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function renderAnalyticsTab() {
+            const container = document.getElementById('analyticsContentArea');
+            const m = parseInt(document.getElementById('viewMonth').value);
+            const y = parseInt(document.getElementById('viewYear').value);
+            
+            // Advanced Statistical Engine
+            let activeSalesData = currentViewData.filter(r => (r.calcSales || 0) > 0).map(r => r.calcSales);
+            let meanSales = activeSalesData.length ? activeSalesData.reduce((a,b)=>a+b,0) / activeSalesData.length : 0;
+            
+            let stdDevSales = 0;
+            if(activeSalesData.length > 1) {
+                let variance = activeSalesData.reduce((a,b) => a + Math.pow(b - meanSales, 2), 0) / activeSalesData.length;
+                stdDevSales = Math.sqrt(variance);
+            }
+
+            let prevM = m === 1 ? 12 : m - 1;
+            let prevY = m === 1 ? y - 1 : y;
+            let prevData = db.filter(e => e.year === prevY && e.month === prevM);
+            let prevTotal = prevData.reduce((s, r) => s + (r.salesData||[]).reduce((a,b)=>a+b,0), 0); 
+            let currFullTotal = currentViewData.reduce((s, r) => s + (r.salesData||[]).reduce((a,b)=>a+b,0), 0);
+            let momPct = prevTotal > 0 ? ((currFullTotal - prevTotal) / prevTotal) * 100 : 0;
+
+            let maxDayVal = 0;
+            let dayTotals = new Array(31).fill(0);
+            currentViewData.forEach(r => {
+                for(let i=0; i<31; i++) { dayTotals[i] += (r.salesData||[])[i] || 0; }
+            });
+            maxDayVal = Math.max(...dayTotals) || 1;
+            let peakDayIndex = dayTotals.indexOf(Math.max(...dayTotals));
+
+            let heatmapHTML = `<div class="heatmap-container">`;
+            for(let i=0; i<31; i++) {
+                let intensity = maxDayVal > 0 ? dayTotals[i] / maxDayVal : 0;
+                let bg = `rgba(16, 185, 129, ${Math.max(0.1, intensity)})`;
+                if(intensity === 0) bg = 'var(--card-border)';
+                heatmapHTML += `<div class="heatmap-cell" style="background:${bg}">
+                    ${i+1}
+                    <div class="tooltip">Day ${i+1}: ₱${dayTotals[i].toLocaleString()}</div>
+                </div>`;
+            }
+            heatmapHTML += `</div>`;
+
+            let cv = meanSales > 0 ? (stdDevSales / meanSales) * 100 : 0; 
+            let stabilityText = cv < 25 ? "highly consistent" : (cv < 50 ? "moderately variable" : "highly volatile");
+            let statSummary = `System analysis indicates a <strong>${stabilityText}</strong> performance spread, with a standard deviation of ₱${stdDevSales.toLocaleString('en-US',{maximumFractionDigits:0})} across active branches. Peak volume occurs on Day ${peakDayIndex+1}, suggesting concentrated regional buying behavior. Month-over-Month volume trends show a ${momPct >= 0 ? 'positive' : 'negative'} trajectory of ${momPct.toFixed(1)}%.`;
+
+            container.innerHTML = `
+                <div class="kpi-matrix">
+                    <div class="kpi-card" style="--primary: var(--accent-success)">
+                        <div class="kpi-details"><p>System Standard Deviation</p><h2 style="color:var(--accent-success)">₱${stdDevSales.toLocaleString('en-US',{maximumFractionDigits:0})}</h2></div>
+                        <div class="kpi-icon" style="color: var(--accent-success)"><i class="fa-solid fa-chart-area"></i></div>
+                    </div>
+                    <div class="kpi-card" style="--primary: var(--accent-info)">
+                        <div class="kpi-details"><p>Average Branch Sales</p><h2 style="color:var(--accent-info)">₱${meanSales.toLocaleString('en-US',{maximumFractionDigits:0})}</h2></div>
+                        <div class="kpi-icon" style="color: var(--accent-info)"><i class="fa-solid fa-calculator"></i></div>
+                    </div>
+                    <div class="kpi-card" style="--primary: ${momPct >= 0 ? 'var(--accent-success)' : 'var(--accent-fail)'}">
+                        <div class="kpi-details"><p>Month-over-Month Growth</p><h2 style="color:${momPct >= 0 ? 'var(--accent-success)' : 'var(--accent-fail)'}">${momPct > 0 ? '+' : ''}${momPct.toFixed(1)}%</h2></div>
+                        <div class="kpi-icon" style="color: ${momPct >= 0 ? 'var(--accent-success)' : 'var(--accent-fail)'}"><i class="fa-solid ${momPct >= 0 ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i></div>
+                    </div>
+                </div>
+
+                <div class="insights-panel" style="display:block;" id="analyticsExportSummary">
+                    <h3><i class="fa-solid fa-brain"></i> Statistical AI Summary</h3>
+                    <p style="font-size:0.9rem; line-height:1.5; font-weight:500;">${statSummary}</p>
+                </div>
+
+                <div class="chart-grid-2">
+                    <div class="chart-composite">
+                        <h3>System-Wide Daily Trend Aggregation</h3>
+                        <div class="chart-wrapper"><canvas id="analyticsDailyTrend"></canvas></div>
+                    </div>
+                    <div class="chart-composite">
+                        <h3>Sales vs Compliance Correlation</h3>
+                        <div class="chart-wrapper"><canvas id="analyticsScatter"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="chart-grid-2">
+                    <div class="chart-composite">
+                        <h3>Revenue vs Target (Top 10 Branches)</h3>
+                        <div class="chart-wrapper"><canvas id="analyticsTargetCombo"></canvas></div>
+                    </div>
+                    <div class="chart-composite">
+                        <h3>Operational Friction Breakdown</h3>
+                        <div class="chart-wrapper"><canvas id="analyticsOpsDoughnut"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="chart-grid-2">
+                    <div class="chart-composite">
+                        <h3>Financial Efficiency Profile</h3>
+                        <div class="chart-wrapper"><canvas id="analyticsCostRadar"></canvas></div>
+                    </div>
+                    <div class="chart-composite">
+                        <h3>Calendar Heatmap (Daily Intensity)</h3>
+                        ${heatmapHTML}
+                    </div>
+                </div>
+            `;
+
+            const cols = getChartColors();
+            
+            try {
+                if(charts.analyticsTrend) charts.analyticsTrend.destroy();
+                charts.analyticsTrend = new Chart(document.getElementById('analyticsDailyTrend').getContext('2d'), {
+                    type: 'line',
+                    data: { labels: Array.from({length:31}, (_,i)=>`D${i+1}`), datasets: [{ label: 'Total Volume', data: dayTotals, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: {color: cols.grid}, ticks: {color: cols.text, font:chartFont} }, y: { grid: {color: cols.grid}, ticks: {color: cols.text, font:chartFont} } } }
+                });
+
+                let scatterData = currentViewData.filter(r => (r.calcSales||0) > 0 && (r.auditScore||0) > 0).map(r => ({ x: r.auditScore, y: r.calcSales, r: 6 }));
+                if(charts.analyticsScatter) charts.analyticsScatter.destroy();
+                charts.analyticsScatter = new Chart(document.getElementById('analyticsScatter').getContext('2d'), {
+                    type: 'scatter',
+                    data: { datasets: [{ label: 'Branch Matrix', data: scatterData, backgroundColor: '#f59e0b' }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { title: { display: true, text: 'Audit Score %', color: cols.text }, grid: {color: cols.grid}, ticks: {color: cols.text, font:chartFont} }, y: { title: { display: true, text: 'Sales Volume', color: cols.text }, grid: {color: cols.grid}, ticks: {color: cols.text, font:chartFont} } } }
+                });
+
+                let top10Analyt = [...currentViewData].sort((a,b)=> (b.calcSales||0) - (a.calcSales||0)).slice(0,10);
+                let tLabels = top10Analyt.map(r=>r.branch.substring(0,7));
+                let tActual = top10Analyt.map(r=>r.calcSales||0);
+                let targetVal = salesFilterMode === 'monthly' ? kpiTargetSales : (kpiTargetSales / 31) * (salesFilterMode === 'daily' ? 1 : 7);
+                let tTarget = top10Analyt.map(()=>targetVal);
+                
+                if(charts.analyticsTargetCombo) charts.analyticsTargetCombo.destroy();
+                charts.analyticsTargetCombo = new Chart(document.getElementById('analyticsTargetCombo').getContext('2d'), {
+                    type: 'bar',
+                    data: { labels: tLabels, datasets: [{ type: 'line', label: 'Target', data: tTarget, borderColor: '#10b981', borderWidth: 2, fill: false }, { type: 'bar', label: 'Revenue', data: tActual, backgroundColor: '#3b82f6', borderRadius: 4 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: {color: cols.grid}, ticks: {color: cols.text, font:chartFont} }, y: { grid: {color: cols.grid}, ticks: {color: cols.text, font:chartFont} } } }
+                });
+
+                let tAcc = currentViewData.filter(r=>(r.opsAcc||"").trim() !== "").length;
+                let tCha = currentViewData.filter(r=>(r.opsCha||"").trim() !== "").length;
+                let tIss = currentViewData.filter(r=>(r.opsIss||"").trim() !== "").length;
+                
+                if(charts.analyticsOps) charts.analyticsOps.destroy();
+                charts.analyticsOps = new Chart(document.getElementById('analyticsOpsDoughnut'), {
+                    type: 'doughnut',
+                    data: { labels: ['Accomplishments', 'Challenges', 'Issues'], datasets: [{ data: [tAcc||0.1, tCha||0.1, tIss||0.1], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth:0 }] },
+                    options: { responsive:true, maintainAspectRatio:false, plugins: { legend: { position: 'bottom', labels: { color: cols.text, font:chartFont } } }, cutout: '65%' }
+                });
+
+                let fCount = currentViewData.filter(r => (r.finGP||0) > 0).length || 1;
+                let aGP = currentViewData.reduce((s,r)=>s+(r.finGP||0),0)/fCount;
+                let aLab = currentViewData.reduce((s,r)=>s+(r.finLabor||0),0)/fCount;
+                let aFood = currentViewData.reduce((s,r)=>s+(r.finFood||0),0)/fCount;
+
+                if(charts.analyticsCost) charts.analyticsCost.destroy();
+                charts.analyticsCost = new Chart(document.getElementById('analyticsCostRadar').getContext('2d'), {
+                    type: 'polarArea',
+                    data: { labels: ['Avg GP %', 'Avg Labor %', 'Avg Food %'], datasets: [{ data: [aGP, aLab, aFood], backgroundColor: ['rgba(59, 130, 246, 0.5)', 'rgba(239, 68, 68, 0.5)', 'rgba(245, 158, 11, 0.5)'], borderColor: ['#3b82f6', '#ef4444', '#f59e0b'] }] },
+                    options: { responsive:true, maintainAspectRatio:false, scales: { r: { grid: { color: cols.grid }, ticks: { display: false } } }, plugins: { legend: { position: 'bottom', labels: { color: cols.text, font:chartFont } } } }
+                });
+            } catch (e) {
+                console.log("Chart render safely bypassed for zero-data constraints.");
+            }
+        }
+
+        function renderHealthTab() {
+            const container = document.getElementById('healthContentArea');
+            let m = parseInt(document.getElementById('viewMonth').value);
+            let y = parseInt(document.getElementById('viewYear').value);
+            
+            let missingSales = currentViewData.filter(r => (r.salesData||[]).reduce((a,b)=>a+b,0) === 0).length;
+            let missingFin = currentViewData.filter(r => (r.finNet||0) === 0 && (r.finGP||0) === 0).length;
+
+            container.innerHTML = `
+                <div class="chart-composite">
+                    <h3><i class="fa-solid fa-lock"></i> Security & Access</h3>
+                    <div class="field-block" style="margin-top:1rem; max-width:450px;">
+                        <label>Update Administrator Password</label>
+                        <div style="display:flex; gap:1rem;">
+                            <input type="password" id="newAdminPass" placeholder="Enter new password" style="flex:1;">
+                            <button class="btn-secondary" onclick="updatePassword()">Update</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-composite">
+                    <h3><i class="fa-solid fa-database"></i> System Data Validation</h3>
+                    <ul class="insights-list" style="margin-top:1rem;">
+                        <li><i class="fa-solid fa-database"></i> Current Database Records: <strong>${db.length} rows</strong></li>
+                        <li><i class="fa-solid fa-file-circle-exclamation" style="color:var(--accent-fail)"></i> Missing Sales Data (${m}/${y}): <strong>${missingSales} branches</strong></li>
+                        <li><i class="fa-solid fa-file-circle-exclamation" style="color:var(--accent-fail)"></i> Missing Financials (${m}/${y}): <strong>${missingFin} branches</strong></li>
+                    </ul>
+                    
+                    <h3 style="margin-top:2rem;">Data Management</h3>
+                    <div style="display:flex; gap:1rem; margin-top:1rem; flex-wrap:wrap; align-items: center;">
+                        <button class="btn-primary" onclick="backupDB()"><i class="fa-solid fa-download"></i> Backup Database (.json)</button>
+                        <button class="btn-secondary" onclick="document.getElementById('sysRestoreInput').click()"><i class="fa-solid fa-upload"></i> Restore Database</button>
+                        
+                        <div style="display:flex; gap:0.5rem; align-items:center; margin-left: auto; background: var(--input-bg); padding: 0.35rem 0.5rem; border-radius: 12px; border: 1px solid var(--accent-fail);">
+                            <input type="password" id="wipePassword" placeholder="Admin Password" style="background:transparent; border:none; outline:none; color:var(--text-main); width: 140px; font-size: 0.85rem; padding-left: 0.5rem;">
+                            <button class="btn-secondary" onclick="clearDB()" style="color:white; background:var(--accent-fail); border:none;"><i class="fa-solid fa-trash"></i> Wipe Database</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.exportModule = function(modType, fileType = 'csv') {
+            if(currentTabId === 'tab-settings') { showToast("System Config cannot be exported.", "error"); return; }
+
+            const mLabel = document.getElementById('viewMonth').options[document.getElementById('viewMonth').selectedIndex].text;
+            const yLabel = document.getElementById('viewYear').value;
+            let fileName = `Panadero_Report_${mLabel}_${yLabel}`;
+
+            if(fileType === 'csv') {
+                let content = "data:text/csv;charset=utf-8,";
+                content += `TRINITAS FOOD CORP. - PANADERO MONTHLY REPORTING\nModule: ${modType.toUpperCase()}\nPeriod: ${mLabel} ${yLabel}\n\n`;
+
+                if(modType === 'sales') {
+                    content += `Filter Scope: ${salesFilterMode.toUpperCase()}\n\n`;
+                    content += "TOP 10 BRANCHES OVERVIEW\nRank,Branch,Volume (PHP)\n";
+                    let top10 = [...currentViewData].slice(0, 10);
+                    top10.forEach((r,i) => content += `"${i+1}","${r.branch}",${r.calcSales||0}\n`);
+                    content += "\nFULL BRANCH RANKING MATRIX\nRank,Branch,Volume (PHP)\n";
+                    currentViewData.forEach((r,i) => content += `"${i+1}","${r.branch}",${r.calcSales||0}\n`);
+                } else if (modType === 'financials') {
+                    content += "Branch,GP %,Labor Cost %,Food Cost %\n";
+                    [...currentViewData].sort((a,b)=> (b.finNet||0) - (a.finNet||0)).forEach(r => content += `"${r.branch}",${r.finGP||0},${r.finLabor||0},${r.finFood||0}\n`);
+                } else if (modType === 'ops') {
+                    content += "Branch,Accomplishments,Challenges,Audit Issues\n";
+                    currentViewData.forEach(r => {
+                        content += `"${r.branch}","${(r.opsAcc||'').replace(/\n/g, ' ')}","${(r.opsCha||'').replace(/\n/g, ' ')}","${(r.opsIss||'').replace(/\n/g, ' ')}"\n`;
+                    });
+                } else if (modType === 'compliance') {
+                    content += "Branch,Audit Score %\n";
+                    [...currentViewData].sort((a,b)=> (b.auditScore||0) - (a.auditScore||0)).forEach(r => {
+                        content += `"${r.branch}",${r.auditScore||0}\n`;
+                    });
+                } else if (modType === 'action') {
+                    content += "Branch,Sales Growth,Cost Reduction,Manpower,Marketing\n";
+                    currentViewData.forEach(r => {
+                        content += `"${r.branch}","${(r.actSal||'').replace(/\n/g, ' ')}","${(r.actCos||'').replace(/\n/g, ' ')}","${(r.actMan||'').replace(/\n/g, ' ')}","${(r.actMar||'').replace(/\n/g, ' ')}"\n`;
+                    });
+                }
+
+                const encodedUri = encodeURI(content);
+                const link = document.createElement("a"); link.setAttribute("href", encodedUri);
+                link.setAttribute("download", fileName + ".csv");
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
+            } 
+            else if (fileType === 'doc') {
+                let htmlDoc = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head>
+                    <meta charset='utf-8'>
+                    <title>Trinitas Report</title>
+                    <style>
+                        @page WordSection1 { size: 841.9pt 595.3pt; mso-page-orientation: landscape; margin: 1.0in; }
+                        div.WordSection1 { page: WordSection1; }
+                        body { font-family: sans-serif; font-size: 11pt; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
+                        th, td { border: 1pt solid #dddddd; padding: 6pt; text-align: left; word-wrap: break-word; }
+                        th { background-color: #f2f2f2; color: #333; }
+                        h2 { color: #D32F2F; margin-bottom: 5px; font-size: 18pt; }
+                        p { margin: 0 0 10px 0; color: #555; }
+                        ul { margin: 0; padding-left: 20px; }
+                        li { color: #333; margin-bottom: 5px; }
+                        br.page-break { page-break-before: always; clear: both; }
+                    </style>
+                </head>
+                <body>
+                <div class="WordSection1">
+                    <h2>TRINITAS FOOD CORP. - PANADERO REPORT</h2>
+                    <p><strong>Period:</strong> ${mLabel} ${yLabel}</p>`;
+                
+                let addTableToDoc = (title, tableId) => {
+                    let tableNode = document.getElementById(tableId);
+                    if(tableNode && tableNode.parentElement) {
+                        htmlDoc += `<h3>${title}</h3>`;
+                        htmlDoc += tableNode.parentElement.outerHTML;
+                        htmlDoc += `<br class="page-break" />`;
+                    }
+                };
+
+                if(modType === 'all' || modType === 'sales') {
+                    if(modType === 'all') {
+                        addTableToDoc("A. Sales Performance", "salesTableBody");
+                        addTableToDoc("B. Financial Metrics", "finTableBody");
+                        addTableToDoc("C. Operational Highlights", "opsQualTableBody");
+                        addTableToDoc("D. Compliance Status", "complianceTableBody");
+                        addTableToDoc("E. Action Plans", "actionQualTableBody");
+                        
+                        let activeSalesData = currentViewData.filter(r => (r.calcSales || 0) > 0).map(r => r.calcSales);
+                        let meanSales = activeSalesData.length ? activeSalesData.reduce((a,b)=>a+b,0) / activeSalesData.length : 0;
+                        let stdDevSales = 0;
+                        if(activeSalesData.length > 1) {
+                            let variance = activeSalesData.reduce((a,b) => a + Math.pow(b - meanSales, 2), 0) / activeSalesData.length;
+                            stdDevSales = Math.sqrt(variance);
+                        }
+                        const m_val = parseInt(document.getElementById('viewMonth').value);
+                        const y_val = parseInt(document.getElementById('viewYear').value);
+                        let prevM = m_val === 1 ? 12 : m_val - 1;
+                        let prevY = m_val === 1 ? y_val - 1 : y_val;
+                        let prevData = db.filter(e => e.year === prevY && e.month === prevM);
+                        let prevTotal = prevData.reduce((s, r) => s + (r.salesData||[]).reduce((a,b)=>a+b,0), 0); 
+                        let currFullTotal = currentViewData.reduce((s, r) => s + (r.salesData||[]).reduce((a,b)=>a+b,0), 0);
+                        let momPct = prevTotal > 0 ? ((currFullTotal - prevTotal) / prevTotal) * 100 : 0;
+
+                        htmlDoc += `<h3>F. Advanced Analytics Summary</h3>`;
+                        htmlDoc += `<ul>
+                            <li><strong>System Standard Deviation:</strong> ₱${stdDevSales.toLocaleString('en-US',{maximumFractionDigits:0})}</li>
+                            <li><strong>Average Branch Sales:</strong> ₱${meanSales.toLocaleString('en-US',{maximumFractionDigits:0})}</li>
+                            <li><strong>Month-over-Month Growth:</strong> ${momPct > 0 ? '+' : ''}${momPct.toFixed(1)}%</li>
+                        </ul>`;
+                        
+                        let analytPanel = document.getElementById('analyticsExportSummary');
+                        if (analytPanel) {
+                            htmlDoc += `<h4>Statistical AI Summary</h4>`;
+                            htmlDoc += analytPanel.innerHTML;
+                        }
+                    } else {
+                        let targetTable = document.getElementById('salesTableBody').parentElement.outerHTML;
+                        htmlDoc += targetTable;
+                    }
+                } else {
+                    let targetTable = "";
+                    if(modType === 'financials') targetTable = document.getElementById('finTableBody').parentElement.outerHTML;
+                    if(modType === 'ops') targetTable = document.getElementById('opsQualTableBody').parentElement.outerHTML;
+                    if(modType === 'compliance') targetTable = document.getElementById('complianceTableBody').parentElement.outerHTML;
+                    if(modType === 'action') targetTable = document.getElementById('actionQualTableBody').parentElement.outerHTML;
+                    htmlDoc += targetTable;
+                }
+
+                htmlDoc += `</div></body></html>`;
+
+                let blob = new Blob(['\ufeff', htmlDoc], { type: 'application/msword' });
+                let url = URL.createObjectURL(blob);
+                let link = document.createElement("a");
+                link.href = url;
+                link.download = fileName + ".doc";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+    </script>
+</body>
+</html>
