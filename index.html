@@ -40,7 +40,7 @@
 
         /* Strictly Isolated Transitions to prevent render lag */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body, .app-sidebar, .global-sticky-header, .kpi-card, .chart-composite, .data-table-wrapper, .top-10-item, .podium-column, .interactive-select, .search-input, .btn-primary, .btn-secondary, .circle-btn, .pill-toggle-container, .admin-modal-box, .insights-panel { 
+        body, .global-sticky-header, .kpi-card, .chart-composite, .data-table-wrapper, .top-10-item, .podium-column, .interactive-select, .search-input, .btn-primary, .btn-secondary, .circle-btn, .pill-toggle-container, .admin-modal-box, .insights-panel { 
             transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease; 
         }
 
@@ -51,7 +51,7 @@
         ::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
-        /* ADVANCED PRESENTATION PRINTING TEMPLATE (Multi-Page Formatting) */
+        /* ADVANCED PRESENTATION PRINTING TEMPLATE */
         .print-header { display: none; }
         @media print {
             @page { size: A4 landscape; margin: 8mm; }
@@ -62,12 +62,9 @@
             .app-main-content { margin-left: 0 !important; width: 100% !important; padding: 0 !important; height: auto !important; overflow-y: visible !important; display: block !important; }
             .tab-content-container { position: relative !important; width: 100% !important; display: block !important; }
             
-            /* FORCE EACH TAB TO RENDER ON A NEW PAGE */
             .tab-pane { position: relative !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; display: block !important; page-break-after: always; z-index: 1 !important; padding-top: 10px; }
             .tab-pane:last-child { page-break-after: auto; }
             #tab-sales { page-break-before: auto; } 
-            
-            /* ONLY hide Settings. Keep Analytics visible for PDF! */
             #tab-settings { display: none !important; } 
 
             .print-header { display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 3px solid var(--primary); padding-bottom: 10px; margin-bottom: 15px; page-break-inside: avoid; }
@@ -94,24 +91,125 @@
             .heatmap-cell { border: 1px solid #ccc !important; }
         }
 
-        /* Mobile Layout */
-        @media (max-width: 1024px) {
-            body { flex-direction: column; overflow: auto; height: auto; }
-            .app-sidebar { width: 100%; height: auto; position: relative; padding: 1rem; border-right: none; border-bottom: 1px solid var(--card-border); flex-direction: row; flex-wrap: wrap; align-items: center; justify-content: center; }
-            .sidebar-brand { margin-bottom: 1rem; width: 100%; justify-content: center; }
-            .nav-menu { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 0.5rem; overflow-x: visible; padding-right: 0;}
-            .nav-item { padding: 0.5rem 1rem; font-size: 0.8rem; }
-            .app-main-content { margin-left: 0; width: 100%; height: auto; padding: 1rem; overflow-y: visible; }
-            
-            .global-sticky-header { flex-direction: column; align-items: center; text-align: center; gap: 1rem; position: static !important; margin-top: 0 !important; border-radius: 20px !important; padding: 1rem; }
-            .header-left-group { flex-direction: column; justify-content: center; }
-            .header-right-group { flex-wrap: wrap; justify-content: center; border-left: none; padding-left: 0; margin-left: 0; }
-            .system-icons { border-left: none; padding-left: 0; justify-content: center; width: 100%; margin-top: 0.5rem; }
-            
-            .kpi-matrix { grid-template-columns: 1fr; }
-            .chart-grid-2 { grid-template-columns: 1fr; }
+        /* ------------------------------------------------------------- */
+        /* STRUCTURAL & RESPONSIVE LAYOUT                                */
+        /* ------------------------------------------------------------- */
+
+        .app-sidebar { 
+            width: var(--sidebar-width); 
+            height: 100vh; 
+            background: var(--card-bg); 
+            border-right: 1px solid var(--card-border); 
+            padding: 2rem 1.5rem; 
+            display: flex; 
+            flex-direction: column; 
+            z-index: 100; 
+            flex-shrink: 0; 
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease; 
+            overflow-x: hidden; 
+            white-space: nowrap; 
         }
 
+        .brand-text, .nav-text { 
+            transition: opacity 0.2s ease; 
+            opacity: 1; 
+            display: inline-block; 
+        }
+
+        /* Collapsed State Styles */
+        .app-sidebar.collapsed { 
+            width: 85px; 
+            padding: 2rem 1rem; 
+        }
+        .app-sidebar.collapsed .brand-text, 
+        .app-sidebar.collapsed .nav-text { 
+            opacity: 0; 
+            width: 0; 
+            overflow: hidden; 
+            display: none; 
+        }
+        .app-sidebar.collapsed .sidebar-brand { 
+            justify-content: center; 
+        }
+        .app-sidebar.collapsed .sidebar-brand img { 
+            width: 45px; 
+            margin: 0; 
+        }
+        .app-sidebar.collapsed .nav-item { 
+            justify-content: center; 
+            padding: 1rem; 
+        }
+        .app-sidebar.collapsed .nav-item i { 
+            margin: 0; 
+            font-size: 1.4rem; 
+            width: auto; 
+        }
+
+        /* Mobile Layout Modifications */
+        @media (max-width: 1024px) {
+            .app-sidebar.collapsed { 
+                width: 75px; 
+                padding: 1.5rem 0.5rem; 
+            }
+            .app-sidebar:not(.collapsed) { 
+                position: absolute; 
+                z-index: 2000; 
+                height: 100vh; 
+                box-shadow: 10px 0 30px rgba(0,0,0,0.5); 
+                width: 260px; 
+            }
+            .app-main-content { 
+                width: 100%; 
+                padding: 1.5rem !important; 
+            }
+            .global-sticky-header { 
+                flex-direction: column; 
+                align-items: flex-start; 
+                gap: 1rem; 
+                padding: 1rem; 
+            }
+            .header-right-group { 
+                margin-left: 0 !important; 
+                width: 100%; 
+                justify-content: flex-start; 
+                flex-wrap: wrap; 
+            }
+            .system-icons { 
+                border-left: none !important; 
+                padding-left: 0 !important; 
+                margin-top: 0.5rem; 
+            }
+            .kpi-matrix { grid-template-columns: 1fr !important; }
+            .chart-grid-2 { grid-template-columns: 1fr !important; }
+        }
+
+        .sidebar-brand { display: flex; align-items: center; gap: 1rem; margin-bottom: 3rem; cursor: pointer; transition: transform 0.2s ease, opacity 0.2s ease; }
+        .sidebar-brand:hover { transform: scale(1.03); opacity: 0.9; }
+        .sidebar-brand img { width: 45px; border-radius: 8px; transition: all 0.3s ease;}
+        .sidebar-brand div h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; }
+        .sidebar-brand div p { font-size: 0.55rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; line-height: 1.2; }
+        
+        .nav-menu { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; overflow-y: auto; padding-right: 5px; }
+        .nav-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-radius: 14px; font-weight: 700; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+        .nav-item i { font-size: 1.2rem; width: 22px; text-align: center; }
+        .nav-item:hover { background: var(--input-bg); color: var(--text-main); }
+        .nav-item.active { background: var(--primary); color: white; box-shadow: 0 4px 15px var(--primary-glow); border-color: var(--primary); }
+
+        .app-main-content { flex: 1; height: 100vh; padding: 2rem 3rem; overflow-y: auto; scroll-behavior: smooth; position: relative; transition: width 0.3s ease; }
+        
+        /* NON-FOLLOWING HEADER */
+        .global-sticky-header { position: relative; z-index: 50; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--card-bg); padding: 1rem 1.5rem; border-radius: 20px; border: 1px solid var(--card-border); box-shadow: 0 10px 30px rgba(0,0,0,0.05); gap: 1rem; flex-wrap: wrap; }
+        
+        .header-left-group { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+        .header-title-area { font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; gap: 0.75rem; letter-spacing: -0.5px; white-space: nowrap; margin: 0; color: var(--primary); }
+        .header-title-area i { font-size: 1.1rem; }
+        
+        .header-date-controls { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-left: 0.5rem;}
+
+        .header-right-group { display: flex; align-items: center; gap: 1rem; flex-wrap: nowrap; margin-left: auto; }
+        .header-actions { display: flex; align-items: center; gap: 0.5rem; }
+        .system-icons { display: flex; align-items: center; gap: 0.5rem; padding-left: 0.75rem; border-left: 1px solid var(--card-border); }
+        
         /* High Speed Animated Particles */
         .bakery-particle-field { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; overflow: hidden; pointer-events: none; }
         .bakery-particle { position: absolute; font-size: 2.2rem; opacity: 0.6; animation: dynamicFloat 6s linear infinite; bottom: -80px; filter: blur(1px) drop-shadow(0 4px 6px rgba(0,0,0,0.4)); }
@@ -136,35 +234,7 @@
         .system-wrapper { display: none; flex-direction: row; width: 100%; height: 100vh; animation: fadeInView 0.3s ease forward; position: relative; z-index: 10; }
         @keyframes fadeInView { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Structural Layout */
-        .app-sidebar { width: var(--sidebar-width); height: 100vh; background: var(--card-bg); border-right: 1px solid var(--card-border); padding: 2rem 1.5rem; display: flex; flex-direction: column; z-index: 100; flex-shrink: 0; }
-        .sidebar-brand { display: flex; align-items: center; gap: 1rem; margin-bottom: 3rem; cursor: pointer; transition: transform 0.2s ease, opacity 0.2s ease; }
-        .sidebar-brand:hover { transform: scale(1.03); opacity: 0.9; }
-        .sidebar-brand img { width: 45px; border-radius: 8px; }
-        .sidebar-brand div h1 { font-size: 1.2rem; font-weight: 800; letter-spacing: -0.5px; line-height: 1.1; }
-        .sidebar-brand div p { font-size: 0.55rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; line-height: 1.2; }
-        
-        .nav-menu { display: flex; flex-direction: column; gap: 0.5rem; flex: 1; overflow-y: auto; padding-right: 5px; }
-        .nav-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-radius: 14px; font-weight: 700; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
-        .nav-item i { font-size: 1.2rem; width: 22px; text-align: center; }
-        .nav-item:hover { background: var(--input-bg); color: var(--text-main); }
-        .nav-item.active { background: var(--primary); color: white; box-shadow: 0 4px 15px var(--primary-glow); border-color: var(--primary); }
-
-        .app-main-content { flex: 1; height: 100vh; padding: 2rem 3rem; overflow-y: auto; scroll-behavior: smooth; position: relative; }
-        
-        /* NON-FOLLOWING HEADER (Position Relative) */
-        .global-sticky-header { position: relative; z-index: 50; display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: var(--card-bg); padding: 1rem 1.5rem; border-radius: 20px; border: 1px solid var(--card-border); box-shadow: 0 10px 30px rgba(0,0,0,0.05); gap: 1rem; flex-wrap: wrap; }
-        
-        .header-left-group { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
-        .header-title-area { font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; gap: 0.75rem; letter-spacing: -0.5px; white-space: nowrap; margin: 0; color: var(--primary); }
-        .header-title-area i { font-size: 1.1rem; }
-        
-        .header-date-controls { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-left: 0.5rem;}
-
-        .header-right-group { display: flex; align-items: center; gap: 1rem; flex-wrap: nowrap; margin-left: auto; }
-        .header-actions { display: flex; align-items: center; gap: 0.5rem; }
-        .system-icons { display: flex; align-items: center; gap: 0.5rem; padding-left: 0.75rem; border-left: 1px solid var(--card-border); }
-        
+        /* Form Components */
         .interactive-select { background: var(--input-bg); color: var(--text-main); border: 1px solid var(--card-border); padding: 0.45rem 0.85rem; border-radius: 8px; font-weight: 700; font-size: 0.75rem; outline: none; cursor: pointer; transition: all 0.2s; }
         .interactive-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
         
@@ -201,7 +271,7 @@
         .tab-pane.active { position: relative; opacity: 1; pointer-events: auto; visibility: visible; z-index: 1; animation: slideUp 0.4s forwards; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* AI Executive Insights Panel */
+        /* General Dashboard Assets */
         .insights-panel { background: linear-gradient(135deg, rgba(211, 47, 47, 0.05) 0%, rgba(211, 47, 47, 0.01) 100%); border: 1px solid var(--primary-glow); border-radius: 20px; padding: 1.5rem; margin-bottom: 2.5rem; position: relative; overflow: hidden; }
         .insights-panel::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
         .insights-panel h3 { font-size: 1.1rem; font-weight: 800; color: var(--primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
@@ -209,7 +279,6 @@
         .insights-list li { font-size: 0.95rem; font-weight: 500; display: flex; align-items: flex-start; gap: 0.5rem; line-height: 1.4; }
         .insights-list li i { color: var(--primary); margin-top: 3px; font-size: 0.8rem; }
 
-        /* CALENDAR HEATMAP */
         .heatmap-container { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 1rem; justify-content: flex-start; }
         .heatmap-cell { width: 32px; height: 32px; border-radius: 6px; background: var(--card-border); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.8); transition: transform 0.2s, background-color 0.3s; cursor: pointer; position: relative; }
         .heatmap-cell:hover { transform: scale(1.1); z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid #fff; }
@@ -306,7 +375,7 @@
 
     <div id="auth-canvas">
         <div class="auth-gate">
-            <img src="trinitas-logo.jpg" alt="Trinitas Logo">
+            <img src="trinitas-logo.jpg">
             <h2 class="auth-title" style="margin-bottom: 0.2rem; font-size: 1.6rem;">TRINITAS</h2>
             <p class="auth-subtitle">Information and Management System for Panadero</p>
             
@@ -331,22 +400,36 @@
 
     <div class="system-wrapper" id="mainSystem">
 
-        <aside class="app-sidebar">
-            <div class="sidebar-brand" style="cursor:default;">
+        <aside class="app-sidebar" id="appSidebar">
+            <div class="sidebar-brand" style="cursor:pointer;" title="Toggle Menu" onclick="toggleSidebar()">
                 <img src="trinitas-logo.jpg">
-                <div>
+                <div class="brand-text">
                     <h1 style="font-size: 1.2rem; line-height: 1.1;">TRINITAS</h1>
-                    <p style="font-size: 0.55rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; line-height: 1.2;">Information and Management System for Panadero</p>
+                    <p style="font-size: 0.55rem; color: var(--primary); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; line-height: 1.2;">KPI Monitoring System</p>
                 </div>
             </div>
             <nav class="nav-menu">
-                <div class="nav-item active" id="nav-sales" onclick="switchTab('tab-sales', this)"><i class="fa-solid fa-chart-line"></i> A. Sales Performance</div>
-                <div class="nav-item" onclick="switchTab('tab-financials', this)"><i class="fa-solid fa-coins"></i> B. Financial Metrics</div>
-                <div class="nav-item" onclick="switchTab('tab-ops', this)"><i class="fa-solid fa-clipboard-check"></i> C. Operational Highlights</div>
-                <div class="nav-item" onclick="switchTab('tab-compliance', this)"><i class="fa-solid fa-shield-halved"></i> D. Compliance Status</div>
-                <div class="nav-item" onclick="switchTab('tab-action', this)"><i class="fa-solid fa-rocket"></i> E. Action Plans</div>
-                <div class="nav-item" onclick="switchTab('tab-analytics', this)"><i class="fa-solid fa-fire-flame-curved"></i> F. Advanced Analytics</div>
-                <div class="nav-item admin-only" onclick="switchTab('tab-settings', this)"><i class="fa-solid fa-gears"></i> G. System Config</div>
+                <div class="nav-item active" id="nav-sales" onclick="switchTab('tab-sales', this)">
+                    <i class="fa-solid fa-chart-line"></i> <span class="nav-text">A. Sales Performance</span>
+                </div>
+                <div class="nav-item" onclick="switchTab('tab-financials', this)">
+                    <i class="fa-solid fa-coins"></i> <span class="nav-text">B. Financial Metrics</span>
+                </div>
+                <div class="nav-item" onclick="switchTab('tab-ops', this)">
+                    <i class="fa-solid fa-clipboard-check"></i> <span class="nav-text">C. Operational Highlights</span>
+                </div>
+                <div class="nav-item" onclick="switchTab('tab-compliance', this)">
+                    <i class="fa-solid fa-shield-halved"></i> <span class="nav-text">D. Compliance Status</span>
+                </div>
+                <div class="nav-item" onclick="switchTab('tab-action', this)">
+                    <i class="fa-solid fa-rocket"></i> <span class="nav-text">E. Action Plans</span>
+                </div>
+                <div class="nav-item" onclick="switchTab('tab-analytics', this)">
+                    <i class="fa-solid fa-fire-flame-curved"></i> <span class="nav-text">F. Advanced Analytics</span>
+                </div>
+                <div class="nav-item admin-only" onclick="switchTab('tab-settings', this)">
+                    <i class="fa-solid fa-gears"></i> <span class="nav-text">G. System Config</span>
+                </div>
             </nav>
         </aside>
 
@@ -355,6 +438,7 @@
             <header class="global-sticky-header">
                 
                 <div class="header-left-group">
+                    <button class="circle-btn" onclick="toggleSidebar()" title="Toggle Menu" style="background:transparent; border-color:transparent;"><i class="fa-solid fa-bars" style="font-size: 1.2rem;"></i></button>
                     <h2 id="global-tab-title" class="header-title-area"><i class="fa-solid fa-chart-line"></i> A. Sales Performance</h2>
                     
                     <div class="header-date-controls" id="headerDateControls">
@@ -410,7 +494,7 @@
                         <div class="print-date-left" id="printDateLeft"></div>
                     </div>
                     <div style="text-align: right;">
-                        <img src="trinitas-logo.jpeg">
+                        <img src="trinitas-logo.jpg" alt="Trinitas Logo" onerror="this.src='https://placehold.co/120x50/d32f2f/ffffff?text=TRINITAS'">
                     </div>
                 </div>
 
@@ -454,6 +538,7 @@
         </main>
     </div>
 
+    <!-- Administrative Modals Base Below -->
     <div class="admin-modal-backdrop" id="uploadModal">
         <div class="admin-modal-box">
             <div class="modal-topline">
@@ -566,7 +651,26 @@
             document.getElementById('secPass').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') { executeAuth(); }
             });
+
+            // Automatically collapse on smaller screens during initialization
+            if (window.innerWidth <= 1024) {
+                document.getElementById('appSidebar').classList.add('collapsed');
+            }
         };
+
+        // Window resize listener to automatically adjust layout
+        window.addEventListener('resize', () => {
+            if (window.innerWidth <= 1024) {
+                document.getElementById('appSidebar').classList.add('collapsed');
+            } else {
+                document.getElementById('appSidebar').classList.remove('collapsed');
+            }
+        });
+
+        // Trigger the Sidebar display
+        function toggleSidebar() {
+            document.getElementById('appSidebar').classList.toggle('collapsed');
+        }
 
         window.onclick = function(event) {
             if (!event.target.matches('.circle-btn') && !event.target.closest('.circle-btn') && 
@@ -661,7 +765,6 @@
             }
         };
 
-        // Decoupled DB Restore execution bound to static anchor
         window.processRestore = function(event) {
             const file = event.target.files[0];
             if(!file) return;
@@ -793,6 +896,11 @@
             
             let mainContent = document.getElementById('mainContentScrollArea');
             if (mainContent) mainContent.scrollTop = 0;
+
+            // Auto close mobile drawer after selecting a tab
+            if (window.innerWidth <= 1024) {
+                document.getElementById('appSidebar').classList.add('collapsed');
+            }
         }
 
         function updateGlobalHeader(targetId) {
